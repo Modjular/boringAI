@@ -4,17 +4,17 @@ title:  Proposal
 ---
 
 ## Summary of the Project (30 points)
-
-In a paragraph or so, mention the main idea behind your project. Focus on the problem setup, not the solution, i.e. what is your goal? At the very least, you should have a sentence that clearly explains the input/output semantics of your project, i.e. what information will it take as input, and what will it produce. Mention any applications, if any, for your project.
+Our project is to train an AI that uses Computer Vision to recognize a minecraft item equivalent to any real-life image from the internet along with recognizing items in game. Based on its judgement, the agent then sets out to find the materials needed to make the item. All types of blocks and materials are scattered around the agent, so the agent would move around, recognize, and collect the material required for the recipe. 
 
 ## AI/ML Algorithms (10 points)
-
-In a single sentence, mention the AI and ML algorithm(s) you anticipate using for your project. It does not have to be a detailed description of the algorithm, even the sub-area of the ﬁeld is sufﬁcient. Examples of this include “planning with dynamic programming”, “reinforcement learning with neural function approximator”, “deep learning for images”, “min-max tree search with pruning”, and so on.
+We plan to use Tensorflow to implement an k-nearest neighbors algorithm for image recognition, keeping in mind other algorithms available, such as AdaBoost, Random forests, etc.
 
 ## Evaluation Plan (30 points)
+Quantitative
+Our baseline is having our metrics be 7 of successful recognitions out of 10 test cases. We will measure % confidence over all classes we choose. We plan to start out with just 10 classes, but our hope/moonshot would be to be able to classify all items in Minecraft.
+Qualitative
+Our sanity case would be verifying that the standard image shown in the inventory is correctly outputted as the right class. Visual confirmation will be used that the prediction looks similar to the actual image. For example, a real life peach being classified as an apple. Our moonshot cases would be correctly verifying both in game and real life images in all angles and environments.
 
-As described in class, mention how you will evaluate the success of your project. In a paragraph, focus on the quantitative evaluation: what are the metrics, what are the baselines, how much you expect your approach to improve the metric by, what data will you evaluate on, etc. In another paragraph, describe what qualitative analysis you will show to verify the project works, such as what are the sanity cases for the approach, how will you visualize the internals of the algorithm to verify it works, what’s your moonshot case, i.e. it’ll be awesome and impressive if you get there. Note that these are not promises, we’re not going to hold you to what you say here, but we want to see if you are able to think about evaluation of your project in a critical manner.
 
 ## Appointment with the Instructor (15 points)
-
-One member of the group should take an appointment with the instructor in the week starting 10/19 (or 10/26, if no slots are available). Try to select a time such that all members of the group can attend (there shouldn’t be conﬂicts, since I’m available to meet during lectures). On the proposal page, mention the date and time you have reserved the appointment for.
+Time: October 22, 9:30 AM
