@@ -6,8 +6,8 @@ title:  Team
 # {{ page.title }}
 
 
-## USER 1
-***UCI Net ID***: ucinetid1
+## Anthony Reksoatmodjo
+***UCI Net ID***: areksoat
 
 ## Lisa Huang
 ***UCI Net ID***: lvhuang
