@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Proposal
+title:  Proposal
 ---
 
 ### 2.2 Summary of the Project (30 points)
