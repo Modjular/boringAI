@@ -9,8 +9,8 @@ title:  Team
 ## USER 1
 ***UCI Net ID***: ucinetid1
 
-## USER 2
-***UCI Net ID***: ucinetid2
+## Lisa Huang
+***UCI Net ID***: lvhuang
 
 ## USER 3
 ***UCI Net ID***: ucinetid3
