@@ -4,17 +4,21 @@ title:  Proposal
 ---
 
 ## Summary of the Project 
-Our project is to train an AI that uses Computer Vision to recognize a minecraft item equivalent to any real-life image from the internet along with recognizing items in game. Based on its judgement, the agent then sets out to find the materials needed to make the item. All types of blocks and materials are scattered around the agent, so the agent would move around, recognize, and collect the material required for the recipe. 
+Our project is to build an AI whose goal is to dig a straight tunnel made up of different types of blocks in the fastest manner. Since certain tools mine through blocks faster than others, our AI will learn to use the proper tool for maximum efficiency. For example shovels are more efficient for dirt and pickaxes are good for stone. The actions that the AI can perform are moving forward, digging, and accessing tools. The AI is rewarded when it breaks a block and punished for each second it takes to break per block. This reward system will encourage the AI to learn different tools to help break blocks faster.   
 
 ## AI/ML Algorithms 
-We plan to use Tensorflow to implement an k-nearest neighbors algorithm for image recognition, keeping in mind other algorithms available, such as AdaBoost, Random forests, etc.
+Some algorithms we will be enforcing and exploring more in depth are reinforced learning, Qlearning, prioritized experience replay, and distributed DQN.
 
 ## Evaluation Plan 
-Quantitative
-Our baseline is having our metrics be 7 of successful recognitions out of 10 test cases. We will measure % confidence over all classes we choose. We plan to start out with just 10 classes, but our hope/moonshot would be to be able to classify all items in Minecraft.
-Qualitative
-Our sanity case would be verifying that the standard image shown in the inventory is correctly outputted as the right class. Visual confirmation will be used that the prediction looks similar to the actual image. For example, a real life peach being classified as an apple. Our moonshot cases would be correctly verifying both in game and real life images in all angles and environments.
+### Quantitative
+Our metric is how long it takes for the agent to dig a 20 block straight tunnel through a mountain made up of different types of blocks. Since the digging speed is controlled by: the type of block, the item currently wielded, and other mining penalities (underwater). Our baseline will be reaching the end of the mountain faster than how long it takes to dig by hand under constant mining penalties. For example shovels are more efficient for dirt and pickaxes are good for stone. 
+
+### Qualitative
+Our sanity check would be seeing that the agent’s time to complete the mission is improving and it’s changing tools. Qualitatively, we can check that it’s using the right tool (shovel) to dig through dirt. Our moon shot would be adding a dimension so that the agent has a choice to circle around tough blocks instead of bulldozing through and avoiding lava blocks.
 
 
 ## Appointment with the Instructor 
 Time: October 22, 9:30 AM
+
+## Internal Meetings
+Minimum: Thursday 8pm - 11pm (weekly)
