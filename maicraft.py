@@ -10,7 +10,7 @@ import json
 import random
 from tqdm import tqdm
 from collections import deque
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import randint
 
@@ -36,9 +36,11 @@ LEARNING_RATE = 1e-4
 START_TRAINING = 500
 LEARN_FREQUENCY = 1
 ACTION_DICT = {
-    0: 'move 1',  # Move one block forward
-    1: 'attack 1'  # Destroy block
+    0: ['hotbar.1 1','hotbar.1 0']  ,#switch to pickaxe
+    1: ['hotbar.2 1',' hotbar.2 0'] #switch to shovel
 }
+
+
 
 
 class QNetwork(nn.Module):
@@ -46,21 +48,21 @@ class QNetwork(nn.Module):
         super().__init__()
         self.net = nn.Sequential(nn.Linear(np.prod(obs_size), hidden_size),
                                  nn.ReLU(),
-                                 nn.Linear(hidden_size, action_size)) 
-        
+                                 nn.Linear(hidden_size, action_size))
+
     def forward(self, obs):
         batch_size = obs.shape[0]
         obs_flat = obs.view(batch_size, -1)
         return self.net(obs_flat)
 
 
-def GetMissionXML(): 
+def GetMissionXML():
     block_type = ['dirt', 'stone']
     tunnel_xml = ''
     for i in range(1, 5):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
     tunnel_xml += "<DrawBlock x=\'0\' y=\'1\' z=\'" + str(5) + "\' type=\'" + 'redstone_block' + "\' />"
-    
+
     return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -94,13 +96,15 @@ def GetMissionXML():
                     <AgentStart>
                         <Placement x="0.5" y="2" z="0.5" pitch="45" yaw="0"/>
                         <Inventory>
-                            <InventoryItem slot="0" type="diamond_shovel"/>
+                            <InventoryItem slot="0" type="diamond_pickaxe"/>
+                            <InventoryItem slot="1" type="diamond_shovel"/>
                         </Inventory>
                     </AgentStart>
                     <AgentHandlers>
                         <DiscreteMovementCommands/>
+                        <InventoryCommands/>
                         <ObservationFromFullStats/>
-                        <RewardForCollectingItem> 
+                        <RewardForCollectingItem>
                             <Item reward='1' type='dirt'/>
                             <Item reward='1' type='stone'/>
                         </RewardForCollectingItem>
@@ -120,13 +124,8 @@ def GetMissionXML():
 
 def get_action(obs, q_network, epsilon, allow_break_action):
     p = np.random.random()
-    choices = [0]
-    if not allow_break_action:
-        choices = [0]
-    else:
-        choices = [0, 1]
     if p < epsilon:
-        return random.choice(choices)
+        return randint(0,len(ACTION_DICT))
 
     # Prevent computation graph from being calculated
     with torch.no_grad():
@@ -136,11 +135,11 @@ def get_action(obs, q_network, epsilon, allow_break_action):
 
         # Remove attack/mine from possible actions if not facing a diamond
         if not allow_break_action:
-            action_values[0, 1] = -float('inf')  
+            action_values[0, 1] = -float('inf')
 
-        # Select action with highest Q-value
+        # Select action with hig)est Q-value
         action_idx = torch.argmax(action_values).item()
-        
+
     return action_idx
 
 
@@ -195,7 +194,7 @@ def get_observation(world_state):
                 obs = np.rot90(obs, k=2, axes=(1, 2))
             elif yaw == 90:
                 obs = np.rot90(obs, k=3, axes=(1, 2))
-            
+
             break
 
     return obs
@@ -221,9 +220,9 @@ def prepare_batch(replay_buffer):
     next_obs = torch.tensor([x[2] for x in batch_data], dtype=torch.float)
     reward = torch.tensor([x[3] for x in batch_data], dtype=torch.float)
     done = torch.tensor([x[4] for x in batch_data], dtype=torch.float)
-    
+
     return obs, action, next_obs, reward, done
-  
+
 
 def learn(batch, optim, q_network, target_network):
     """
@@ -304,10 +303,14 @@ def train(agent_host):
             # Get action
             allow_break_action = obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 1
             action_idx = get_action(obs, q_network, epsilon, allow_break_action)
-            command = ACTION_DICT[action_idx]
+            commands = ACTION_DICT[action_idx]
 
             # Take step
-            agent_host.sendCommand(command)
+            for command in commands:
+                agent_host.sendCommand(command)
+            if allow_break_action:
+                agent_host.sendCommand("attack 1")
+            agent_host.sendCommand("move 1")
 
             # If your agent isn't registering reward you may need to increase this
             time.sleep(0.1)
@@ -320,13 +323,13 @@ def train(agent_host):
                     obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 0 and \
                     command == 'move 1'):
                 done = True
-                time.sleep(2)  
+                time.sleep(2)
 
             # Get next observation
             world_state = agent_host.getWorldState()
             for error in world_state.errors:
                 print("Error:", error.text)
-            next_obs = get_observation(world_state) 
+            next_obs = get_observation(world_state)
 
             # Get reward
             reward = 0
