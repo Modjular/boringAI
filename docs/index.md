@@ -3,38 +3,15 @@ layout: default
 title:  Home
 ---
 
-Source code: https://github.com/Modjular/mAICraft
-
+## Welcome!
+Hello and welcome to our mAICraft page! Here we will discuss in depth of our process of developing our AI. 
+Check out our source code here: https://github.com/Modjular/mAICraft
+Along with our reports:
 Reports:
 
-- [Proposal](proposal.html)
-- [Status](status.html)
-- [Final](final.html)
+- [Proposal](proposal.html) (TBD)
+- [Status](status.html) (TBD)
+- [Final](final.html) (TBD)
 
-What's Markdown (`.md`)?
-
-Markdown is markup that lets you write hypertext (HTML) documents
-in easy-to-read and easy-to-write plain text.
-No angle brackets `<></>` required for
-paragraphs, lists, blockquotes, tables, etc.
-
-
-This is a paragraph (in Markdown). Some more
-text here.
-
-This is another paragraph.
-
-This is a list:
-
-- Orange
-- Apple
-- Blueberry
-
-$$x^2 = y^2$$
-
-
-Just getting started with Markdown?
-See the [HTML <-> Markdown Quick Reference (Cheat Sheet)][quickref].
-
-
-[quickref]: https://github.com/mundimark/quickrefs/blob/master/HTML.md
+## Our Name
+mAICraft is pronounced similarly to - "my craft". We wanted to develop an AI to mine for us, therefore taking out the "Mine" in "MineCraft." 
