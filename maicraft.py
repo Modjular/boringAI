@@ -24,8 +24,8 @@ SIZE = 50
 REWARD_DENSITY = .1
 PENALTY_DENSITY = .02
 OBS_SIZE = 5
-MAX_EPISODE_STEPS = 100
-MAX_GLOBAL_STEPS = 10000
+MAX_EPISODE_STEPS = 5
+MAX_GLOBAL_STEPS = 50
 REPLAY_BUFFER_SIZE = 10000
 EPSILON_DECAY = .999
 MIN_EPSILON = .1
@@ -37,58 +37,29 @@ START_TRAINING = 500
 LEARN_FREQUENCY = 1
 ACTION_DICT = {
     0: 'move 1',  # Move one block forward
-    # 1: 'turn 1',  # Turn 90 degrees to the right
-    # 2: 'turn -1',  # Turn 90 degrees to the left
     1: 'attack 1'  # Destroy block
 }
 
 
-# Q-Value Network
 class QNetwork(nn.Module):
-    #------------------------------------
-    #
-    #   TODO: Modify network architecture
-    #
-    #-------------------------------------
-
     def __init__(self, obs_size, action_size, hidden_size=50):
         super().__init__()
-        self.linear = nn.Linear(obs_size[1] * obs_size[2] * hidden_size, action_size)
-        self.net = nn.Sequential(nn.Conv2d(obs_size[0], hidden_size, kernel_size=3,padding=1),
-                                 nn.Tanh(),
-                                 nn.Conv2d(hidden_size, hidden_size, kernel_size=3,padding=1)) 
+        self.net = nn.Sequential(nn.Linear(np.prod(obs_size), hidden_size),
+                                 nn.ReLU(),
+                                 nn.Linear(hidden_size, action_size)) 
         
     def forward(self, obs):
-        """
-        Estimate q-values given obs
-
-        Args:
-            obs (tensor): current obs, size (batch x obs_size)
-
-        Returns:
-            q-values (tensor): estimated q-values, size (batch x action_size)
-        """
-        x = self.net(obs)
         batch_size = obs.shape[0]
-        x_flat = x.view(batch_size, -1)
-        return self.linear(x_flat)
+        obs_flat = obs.view(batch_size, -1)
+        return self.net(obs_flat)
 
 
-def GetMissionXML():
-    #------------------------------------
-    #
-    #   TODO: Spawn diamonds
-    #   TODO: Spawn lava
-    #   TODO: Add diamond reward
-    #   TODO: Add lava negative reward
-    #
-    #-------------------------------------
-    
+def GetMissionXML(): 
     block_type = ['dirt', 'stone']
     tunnel_xml = ''
-    for i in range(1, 20):
+    for i in range(1, 5):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
-    tunnel_xml += "<DrawBlock x=\'0\' y=\'1\' z=\'" + str(20) + "\' type=\'" + 'redstone_block' + "\' />"
+    tunnel_xml += "<DrawBlock x=\'0\' y=\'1\' z=\'" + str(5) + "\' type=\'" + 'redstone_block' + "\' />"
     
     return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -148,22 +119,6 @@ def GetMissionXML():
 
 
 def get_action(obs, q_network, epsilon, allow_break_action):
-    """
-    Select action according to e-greedy policy
-
-    Args:
-        obs (np-array): current observation, size (obs_size)
-        q_network (QNetwork): Q-Network
-        epsilon (float): probability of choosing a random action
-
-    Returns:
-        action (int): chosen action [0, action_size)
-    """
-    #------------------------------------
-    #
-    #   TODO: Implement e-greedy policy
-    #
-    #-------------------------------------
     p = np.random.random()
     choices = [0]
     if not allow_break_action:
@@ -181,7 +136,7 @@ def get_action(obs, q_network, epsilon, allow_break_action):
 
         # Remove attack/mine from possible actions if not facing a diamond
         if not allow_break_action:
-            action_values[0, 3] = -float('inf')  
+            action_values[0, 1] = -float('inf')  
 
         # Select action with highest Q-value
         action_idx = torch.argmax(action_values).item()
@@ -190,9 +145,6 @@ def get_action(obs, q_network, epsilon, allow_break_action):
 
 
 def init_malmo(agent_host):
-    """
-    Initialize new malmo mission.
-    """
     my_mission = MalmoPython.MissionSpec(GetMissionXML(), True)
     my_mission_record = MalmoPython.MissionRecordSpec()
     my_mission.requestVideo(800, 500)
@@ -204,7 +156,7 @@ def init_malmo(agent_host):
 
     for retry in range(max_retries):
         try:
-            agent_host.startMission( my_mission, my_clients, my_mission_record, 0, "DiamondCollector" )
+            agent_host.startMission( my_mission, my_clients, my_mission_record, 0, "Secret Tunnel" )
             break
         except RuntimeError as e:
             if retry == max_retries - 1:
@@ -217,16 +169,6 @@ def init_malmo(agent_host):
 
 
 def get_observation(world_state):
-    """
-    Use the agent observation API to get a 2 x 5 x 5 grid around the agent. 
-    The agent is in the center square facing up.
-
-    Args
-        world_state: <object> current agent world state
-
-    Returns
-        observation: <np.array>
-    """
     obs = np.zeros((2, OBS_SIZE, OBS_SIZE))
 
     while world_state.is_mission_running:
@@ -306,35 +248,19 @@ def learn(batch, optim, q_network, target_network):
     return loss.item()
 
 
-def log_returns(steps, returns):
-    """
-    Log the current returns as a graph and text file
-
-    Args:
-        steps (list): list of global steps after each episode
-        returns (list): list of total return of each episode
-    """
-    box = np.ones(10) / 10
-    returns_smooth = np.convolve(returns, box, mode='same')
+def log_returns(times, returns):
+    print(times)
+    print(returns)
+    # box = np.ones(10) / 10
+    # returns_smooth = np.convolve(returns, box, mode='same')
     plt.clf()
-    plt.plot(steps, returns_smooth)
-    plt.title('Diamond Collector')
-    plt.ylabel('Return')
-    plt.xlabel('Steps')
+    plt.plot(times, returns)
+    plt.title('Secret Tunnel')
+    plt.ylabel('Action')
+    plt.xlabel('Time')
     plt.savefig('returns.png')
 
-    with open('returns.txt', 'w') as f:
-        for value in returns:
-            f.write("{}\n".format(value)) 
-
-
 def train(agent_host):
-    """
-    Main loop for the DQN learning algorithm
-
-    Args:
-        agent_host (MalmoPython.AgentHost)
-    """
     # Init networks
     q_network = QNetwork((2, OBS_SIZE, OBS_SIZE), len(ACTION_DICT))
     target_network = QNetwork((2, OBS_SIZE, OBS_SIZE), len(ACTION_DICT))
@@ -348,11 +274,12 @@ def train(agent_host):
 
     # Init vars
     global_step = 0
+    global_time = 0
     num_episode = 0
     epsilon = 1
     start_time = time.time()
     returns = []
-    steps = []
+    times = []
 
     # Begin main loop
     loop = tqdm(total=MAX_GLOBAL_STEPS, position=0, leave=False)
@@ -413,6 +340,7 @@ def train(agent_host):
 
             # Learn
             global_step += 1
+            global_time += (time.time() - start_time) / 60
             if global_step > START_TRAINING and global_step % LEARN_FREQUENCY == 0:
                 batch = prepare_batch(replay_buffer)
                 loss = learn(batch, optim, q_network, target_network)
@@ -426,14 +354,14 @@ def train(agent_host):
 
         num_episode += 1
         returns.append(episode_return)
-        steps.append(global_step)
+        times.append(global_time)
         avg_return = sum(returns[-min(len(returns), 10):]) / min(len(returns), 10)
         loop.update(episode_step)
         loop.set_description('Episode: {} Steps: {} Time: {:.2f} Loss: {:.2f} Last Return: {:.2f} Avg Return: {:.2f}'.format(
             num_episode, global_step, (time.time() - start_time) / 60, episode_loss, episode_return, avg_return))
 
-        if num_episode > 0 and num_episode % 10 == 0:
-            log_returns(steps, returns)
+        if num_episode > 0:
+            log_returns(times, returns)
             print()
 
 
