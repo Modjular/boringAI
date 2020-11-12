@@ -20,6 +20,7 @@ from torch.utils.data import Dataset, DataLoader
 
 
 # Hyperparameters
+TUNNEL_LEN = 20
 SIZE = 50
 REWARD_DENSITY = .1
 PENALTY_DENSITY = .02
@@ -59,9 +60,16 @@ class QNetwork(nn.Module):
 def GetMissionXML():
     block_type = ['dirt', 'stone']
     tunnel_xml = ''
-    for i in range(1, 5):
+    for i in range(1, TUNNEL_LEN):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
-    tunnel_xml += "<DrawBlock x=\'0\' y=\'1\' z=\'" + str(5) + "\' type=\'" + 'redstone_block' + "\' />"
+    for i in range(-5, 6):
+        if i%2 == 0:
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'coal_block\' />"
+        else:
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'quartz_block\' />"
+    # for i in range(-2, 2):
+    #     for j in range(3):
+    #         tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
 
     return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -82,10 +90,10 @@ def GetMissionXML():
                         <FlatWorldGenerator generatorString="3;7,2;1;"/>
                         <DrawingDecorator>''' + \
                             "<DrawCuboid x1='{}' x2='{}' y1='2' y2='2' z1='{}' z2='{}' type='air'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
-                            "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1' z1='{}' z2='{}' type='stone'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
+                            "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1' z1='{}' z2='{}' type='grass'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
                             tunnel_xml + \
                             '''<DrawBlock x='0'  y='2' z='0' type='air' />
-                            <DrawBlock x='0'  y='1' z='0' type='stone' />
+                            <DrawBlock x='0'  y='1' z='0' type='grass' />
                         </DrawingDecorator>
                         <ServerQuitWhenAnyAgentFinishes/>
                     </ServerHandlers>
@@ -115,7 +123,7 @@ def GetMissionXML():
                             </Grid>
                         </ObservationFromGrid>
                          <AgentQuitFromTouchingBlockType>
-                            <Block type="redstone_block"/>
+                            <Block type="coal_block"/>
                         </AgentQuitFromTouchingBlockType>
                     </AgentHandlers>
                 </AgentSection>
@@ -247,9 +255,42 @@ def learn(batch, optim, q_network, target_network):
     return loss.item()
 
 
+def get_inv_observation(world_state):
+    """
+    Use the agent observation API to view the hotbar
+    length 10 array
+
+    Args
+        world_state: <object> current agent world state
+
+    Returns
+        observation: <array> Strings
+    """
+    inv_obs = []  # create an empty string array to store the "hotbar"
+    for i in range(9):
+        inv_obs.append("") # fill it with empty strings
+
+    while world_state.is_mission_running:
+        time.sleep(0.1)
+        world_state = agent_host.getWorldState()
+        if len(world_state.errors) > 0:
+            raise AssertionError('Could not load grid.')
+
+        if world_state.number_of_observations_since_last_state > 0:
+            # First we get the json from the observation API
+            msg = world_state.observations[-1].text
+            obs = json.loads(msg)
+
+            for item in obs[u'inventory']:
+                name = item['type']
+                i = int(item['index'])
+                inv_obs[i] = name
+
+    return inv_obs
+
 def log_returns(times, returns):
-    print(times)
-    print(returns)
+    # print(times)
+    # print(returns)
     # box = np.ones(10) / 10
     # returns_smooth = np.convolve(returns, box, mode='same')
     plt.clf()
@@ -324,12 +365,19 @@ def train(agent_host):
                     command == 'move 1'):
                 done = True
                 time.sleep(2)
-
+    
             # Get next observation
             world_state = agent_host.getWorldState()
             for error in world_state.errors:
                 print("Error:", error.text)
             next_obs = get_observation(world_state)
+
+            if world_state.number_of_observations_since_last_state > 0:
+                msg = world_state.observations[-1].text
+                observations = json.loads(msg)
+                grid = observations['floorAll']
+                # print(grid[-3])
+            
 
             # Get reward
             reward = 0
