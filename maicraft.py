@@ -42,8 +42,6 @@ ACTION_DICT = {
 }
 
 
-
-
 class QNetwork(nn.Module):
     def __init__(self, obs_size, action_size, hidden_size=50):
         super().__init__()
@@ -60,22 +58,30 @@ class QNetwork(nn.Module):
 def GetMissionXML():
     block_type = ['dirt', 'stone']
     tunnel_xml = ''
-    for i in range(1, TUNNEL_LEN):
+    for i in range(1, TUNNEL_LEN + 1):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
     for i in range(-5, 6):
         if i%2 == 0:
             tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'coal_block\' />"
         else:
             tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'quartz_block\' />"
-    # for i in range(-2, 2):
-    #     for j in range(3):
-    #         tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
+    for i in range(-5, 6):
+        for j in range(2,5):
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'" + str(j) + "\' z=\'1\' type=\'glass\' />"
+    for i in range(1, TUNNEL_LEN + 1):
+        for j in range(2, 5):
+            tunnel_xml += "<DrawBlock x=\'-5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
+            tunnel_xml += "<DrawBlock x=\'5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
+
+
+    tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'1\' type=\'air\' />"
+    tunnel_xml += "<DrawBlock x=\'0\' y=\'3\' z=\'1\' type=\'air\' />"
 
     return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
                 <About>
-                    <Summary>Diamond Collector</Summary>
+                    <Summary>Tunnel Crawler</Summary>
                 </About>
 
                 <ServerSection>
@@ -100,7 +106,7 @@ def GetMissionXML():
                 </ServerSection>
 
                 <AgentSection mode="Survival">
-                    <Name>CS175DiamondCollector</Name>
+                    <Name>Tunnel Crawler</Name>
                     <AgentStart>
                         <Placement x="0.5" y="2" z="0.5" pitch="45" yaw="0"/>
                         <Inventory>
@@ -111,6 +117,7 @@ def GetMissionXML():
                     <AgentHandlers>
                         <DiscreteMovementCommands/>
                         <InventoryCommands/>
+                        <ObservationFromFullInventory flat="false"/>
                         <ObservationFromFullStats/>
                         <RewardForCollectingItem>
                             <Item reward='1' type='dirt'/>
@@ -191,7 +198,7 @@ def get_observation(world_state):
 
             # Get observation
             grid = observations['floorAll']
-            grid_binary = [1 if x == 'dirt' or x == 'stone' else 0 for x in grid]
+            grid_binary = [1 for x in grid]
             obs = np.reshape(grid_binary, (2, OBS_SIZE, OBS_SIZE))
 
             # Rotate observation with orientation of agent
@@ -254,6 +261,13 @@ def learn(batch, optim, q_network, target_network):
 
     return loss.item()
 
+def get_block_front(world_state):
+    if world_state.number_of_observations_since_last_state > 0:
+        msg = world_state.observations[-1].text
+        observations = json.loads(msg)
+        grid = observations['floorAll']
+        return grid[-3]
+    return "Problem in get_block_front"
 
 def get_inv_observation(world_state):
     """
@@ -285,18 +299,17 @@ def get_inv_observation(world_state):
                 name = item['type']
                 i = int(item['index'])
                 inv_obs[i] = name
+            break
 
     return inv_obs
 
 def log_returns(times, returns):
-    # print(times)
-    # print(returns)
     # box = np.ones(10) / 10
     # returns_smooth = np.convolve(returns, box, mode='same')
     plt.clf()
     plt.plot(times, returns)
     plt.title('Secret Tunnel')
-    plt.ylabel('Action')
+    plt.ylabel('Reward')
     plt.xlabel('Time')
     plt.savefig('returns.png')
 
@@ -372,13 +385,9 @@ def train(agent_host):
                 print("Error:", error.text)
             next_obs = get_observation(world_state)
 
-            if world_state.number_of_observations_since_last_state > 0:
-                msg = world_state.observations[-1].text
-                observations = json.loads(msg)
-                grid = observations['floorAll']
-                # print(grid[-3])
+            # print(get_inv_observation(world_state))
+            # print(get_block_front(world_state))
             
-
             # Get reward
             reward = 0
             for r in world_state.rewards:
