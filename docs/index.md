@@ -18,8 +18,7 @@ There lived two lovers, Steve and Alex. Their romantic tale is passed down throu
 ```
 *- Eisen, Zach T, Mae Whitman, Jack DeSena, Dante Basco, Dee B. Baker, Mako, and Melendy Britt. Avatar, the Last Airbender. , 2015.*
 <img src="https://media.giphy.com/media/l1ydPyGCoN43kpdwRO/giphy.gif" alt="alt text" width="800" height="400">
-
-![](../assets/steve.png)
+<img src="../assets/steve.png" >
 
 ### The Problem Space
 Our AI, Steve, has to dig a tunnel to reach his lover, but wants to get to the end as fast as possible using his limited amount of tools.
