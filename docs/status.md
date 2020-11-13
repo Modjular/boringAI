@@ -18,15 +18,15 @@ In our prototype, we have 2 different tools (pickaxe and shovel) with 2 differen
 
 ```
 if get_block_front(world_state) == 'dirt':
-                if action_idx == 0: # switching to pickaxe
-                    reward += -10
-                else:
-                    reward += 10
+  if action_idx == 0: # switching to pickaxe
+    reward += -10
+  else:
+    reward += 10
 elif get_block_front(world_state) == 'stone':
-                if action_idx == 1: #switching to shovel
-                    reward += 10
-                else:
-                    reward += -10
+  if action_idx == 1: #switching to shovel
+    reward += 10
+  else:
+    reward += -10
 ```
 
 
@@ -37,6 +37,7 @@ Our baseline is a random agent - randomly swapping tools while digging the tunne
 We evaluate our AI by generating a graph of reward versus time (or steps). As the agent trains longer, we expect the graph to have an upward trend. 
 
 <img src="assets/rewards.png" >
+Above is a graph created from our prototype, showing a positive correlation between the number of steps and the reward, indicating improvement in our AI. 
 
 ### Qualitative
 Although our metrics are straightforward, our sanity check is changing tools in response to its environment. Qualitatively, we can check that it’s using the right tool (shovel) to dig through dirt. Because of the nature of our state, there are not many things we can qualitatively measure. But perhaps we will discover qualitative metrics as we progress and attempt to add more difficult states.
