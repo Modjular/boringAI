@@ -22,13 +22,11 @@ from torch.utils.data import Dataset, DataLoader
 # Hyperparameters
 TUNNEL_LEN = 20
 SIZE = 50
-REWARD_DENSITY = .1
-PENALTY_DENSITY = .02
 OBS_SIZE = 5
 MAX_EPISODE_STEPS = 5
-MAX_GLOBAL_STEPS = 50
+MAX_GLOBAL_STEPS = 1000
 REPLAY_BUFFER_SIZE = 10000
-EPSILON_DECAY = .999
+EPSILON_DECAY = .99
 MIN_EPSILON = .1
 BATCH_SIZE = 128
 GAMMA = .9
@@ -385,13 +383,25 @@ def train(agent_host):
                 print("Error:", error.text)
             next_obs = get_observation(world_state)
 
-            # print(get_inv_observation(world_state))
-            # print(get_block_front(world_state))
-            
             # Get reward
+            # for r in world_state.rewards:
+            #     print(r)
+
+
             reward = 0
-            for r in world_state.rewards:
-                reward += r.getValue()
+            if get_block_front(world_state) == 'dirt' or get_block_front(world_state) == 'grass':
+                if action_idx == 0:
+                    reward += -10
+                else:
+                    reward += 10
+            elif get_block_front(world_state) == 'stone':
+                if action_idx == 1:
+                    reward += 10
+                else:
+                    reward += -10
+            
+            
+                # reward += r.getValue()
             episode_return += reward
 
             # Store step in replay buffer
@@ -413,6 +423,7 @@ def train(agent_host):
                     target_network.load_state_dict(q_network.state_dict())
 
         num_episode += 1
+        print(epsilon)
         returns.append(episode_return)
         times.append(global_time)
         avg_return = sum(returns[-min(len(returns), 10):]) / min(len(returns), 10)
