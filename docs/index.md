@@ -16,12 +16,11 @@ There lived two lovers, Steve and Alex. Their romantic tale is passed down throu
   Through the mountain!   
   Secret, secret, secret, secret tunnel!"
 ```
-*(Eisen et al.)*
+*- Eisen, Zach T, Mae Whitman, Jack DeSena, Dante Basco, Dee B. Baker, Mako, and Melendy Britt. Avatar, the Last Airbender. , 2015.*
 
-Our AI, Steve, has to dig a tunnel to reach his lover, but wants to get to the end as fast as possible using his limited amount of tools. 
- 
-- Eisen, Zach T, Mae Whitman, Jack DeSena, Dante Basco, Dee B. Baker, Mako, and Melendy Britt. Avatar, the Last Airbender. , 2015.
-
+### The Problem Space
+Our AI, Steve, has to dig a tunnel to reach his lover, but wants to get to the end as fast as possible using his limited amount of tools.
+He will have to learn which tools dig the fastest through dirt and stone
 Check out our source code here: https://github.com/Modjular/boringAI
 
 Reports:
