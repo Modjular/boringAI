@@ -1,4 +1,4 @@
-# mAICraft
+# boringAI
 CS 175 - Project in AI and ML using Malmo
-Check out here:
-https://modjular.github.io/mAICraft/
+Check it out here:
+https://modjular.github.io/boringAI/
