@@ -30,5 +30,4 @@ Reports:
 - [Final](final.html) (TBD)
 
 ### Our Name
-mAICraft is pronounced similarly to - "my craft". We wanted to develop an AI to mine for us, therefore taking out the "Mine" in "MineCraft." 
-
+"Boring" is a synonym of "digging". Steve, once trained, will use his skills to bore through the mountain and reach his love. 
