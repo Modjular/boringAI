@@ -2,6 +2,8 @@
 layout: default
 title:  Status
 ---
+## Video
+<iframe width="560" height="315" src="https://youtu.be/wTAyOouitOs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Project Summary
 In Minecraft, certain tools mine through blocks faster than others (i.e. pickaxes destroy stone-blocks faster than shovels). We aim to train a Minecraft agent using deep reinforcement learning to dig to the end of a tunnel as fast as possible, by learning what tools are best for each material it encounters. Ideally, our AI will learn to use the proper tool to destroy the block, for maximum tunneling speed. For our prototype, we concentrated on the switching to the right tool. To do so, we limited our malmo environment to discrete movements and used dense rewards. For our finished project, we plan on incorporating sparse rewards based on time, instead of dense, direct rewards
