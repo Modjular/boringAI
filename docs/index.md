@@ -22,7 +22,7 @@ There lived two lovers, Steve and Alex. Their romantic tale is passed down throu
 
 ### The Problem Space
 Our AI, Steve, has to dig a tunnel to reach his lover, but wants to get to the end as fast as possible using his limited amount of tools.
-He will have to learn which tools dig the fastest through dirt and stone
+He will have to learn which tools dig the fastest through dirt and stone.  
 Check out our source code here: https://github.com/Modjular/boringAI
 
 Reports:
