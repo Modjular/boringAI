@@ -61,9 +61,9 @@ def GetMissionXML():
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
     for i in range(-5, 6):
         if i%2 == 0:
-            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'coal_block\' />"
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'"+str(TUNNEL_LEN +1) + "\' type=\'coal_block\' />"
         else:
-            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(TUNNEL_LEN) + "\' type=\'quartz_block\' />"
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" +str(TUNNEL_LEN+1) + "\' type=\'quartz_block\' />"
     for i in range(-5, 6):
         for j in range(2,5):
             tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'" + str(j) + "\' z=\'1\' type=\'glass\' />"
