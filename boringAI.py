@@ -36,7 +36,8 @@ START_TRAINING = 500
 LEARN_FREQUENCY = 1
 ACTION_DICT = {
     0: ['hotbar.1 1','hotbar.1 0']  ,#switch to pickaxe
-    1: ['hotbar.2 1',' hotbar.2 0'] #switch to shovel
+    1: ['hotbar.2 1',' hotbar.2 0'], #switch to shovel
+    2: ['hotbar.3 1','hotbar.3 0'] #switch to axe
 }
 
 
@@ -54,7 +55,7 @@ class QNetwork(nn.Module):
 
 
 def GetMissionXML():
-    block_type = ['dirt', 'stone']
+    block_type = ['dirt', 'stone','log']
     tunnel_xml = ''
     for i in range(1, TUNNEL_LEN + 1):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
@@ -94,10 +95,10 @@ def GetMissionXML():
                         <FlatWorldGenerator generatorString="3;7,2;1;"/>
                         <DrawingDecorator>''' + \
                             "<DrawCuboid x1='{}' x2='{}' y1='2' y2='2' z1='{}' z2='{}' type='air'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
-                            "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1' z1='{}' z2='{}' type='grass'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
+                            "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1'z1='{}'z2='{}' type='prismarine'/>".format(-SIZE, SIZE, -SIZE, SIZE) + \
                             tunnel_xml + \
                             '''<DrawBlock x='0'  y='2' z='0' type='air' />
-                            <DrawBlock x='0'  y='1' z='0' type='grass' />
+                            <DrawBlock x='0'  y='1' z='0' type='prismarine' />
                         </DrawingDecorator>
                         <ServerQuitWhenAnyAgentFinishes/>
                     </ServerHandlers>
@@ -110,17 +111,15 @@ def GetMissionXML():
                         <Inventory>
                             <InventoryItem slot="0" type="diamond_pickaxe"/>
                             <InventoryItem slot="1" type="diamond_shovel"/>
+                            <InventoryItem slot="2" type="diamond_axe"/>
                         </Inventory>
                     </AgentStart>
                     <AgentHandlers>
-                        <DiscreteMovementCommands/>
+                        <ContinuousMovementCommands/>
                         <InventoryCommands/>
                         <ObservationFromFullInventory flat="false"/>
                         <ObservationFromFullStats/>
-                        <RewardForCollectingItem>
-                            <Item reward='1' type='dirt'/>
-                            <Item reward='1' type='stone'/>
-                        </RewardForCollectingItem>
+                        <RewardForTimeTaken initialReward = "100"  delta = "-1" density = "MISSION_END"/>
                         <ObservationFromGrid>
                             <Grid name="floorAll">
                                 <min x="-'''+str(int(OBS_SIZE/2))+'''" y="-1" z="-'''+str(int(OBS_SIZE/2))+'''"/>
@@ -355,7 +354,7 @@ def train(agent_host):
             # Get action
             allow_break_action = obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 1
             action_idx = get_action(obs, q_network, epsilon, allow_break_action)
-            commands = ACTION_DICT[action_idx]
+            commands = ACTION_DICT[action_idx]#switch tools
 
             # Take step
             for command in commands:
@@ -376,32 +375,18 @@ def train(agent_host):
                     command == 'move 1'):
                 done = True
                 time.sleep(2)
-    
+
             # Get next observation
             world_state = agent_host.getWorldState()
             for error in world_state.errors:
                 print("Error:", error.text)
             next_obs = get_observation(world_state)
 
-            # Get reward
-            # for r in world_state.rewards:
-            #     print(r)
-
-
             reward = 0
-            if get_block_front(world_state) == 'dirt' or get_block_front(world_state) == 'grass':
-                if action_idx == 0:
-                    reward += -10
-                else:
-                    reward += 10
-            elif get_block_front(world_state) == 'stone':
-                if action_idx == 1:
-                    reward += 10
-                else:
-                    reward += -10
-            
-            
-                # reward += r.getValue()
+            #Get reward
+            for r in world_state.rewards:
+                reward =r.getValue()
+
             episode_return += reward
 
             # Store step in replay buffer
