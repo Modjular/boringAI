@@ -90,7 +90,7 @@ def GetMissionXML(num_episode):
                     <ServerInitialConditions>
                         <Time>
                             <StartTime>12000</StartTime>
-                            <AllowPassageOfTime>true</AllowPassageOfTime>
+                            <AllowPassageOfTime>false</AllowPassageOfTime>
                         </Time>
                         <Weather>clear</Weather>
                     </ServerInitialConditions>
@@ -308,15 +308,22 @@ def get_inv_observation(world_state):
 
     return inv_obs
 
-def log_returns(x, y):
+def log_returns(episodes, returns, times):
     # box = np.ones(10) / 10
     # returns_smooth = np.convolve(returns, box, mode='same')
     plt.clf()
-    plt.plot(x, y)
+    plt.plot(episodes, returns)
     plt.title('Secret Tunnel')
     plt.ylabel('Reward')
-    plt.xlabel('Episodes')
-    plt.savefig('returns.png')
+    plt.xlabel('Iteration')
+    plt.savefig('returns_rewards.png')
+
+    plt.clf()
+    plt.plot(episodes, times)
+    plt.title('Secret Tunnel')
+    plt.ylabel('times (seconds)')
+    plt.xlabel('Iteration')
+    plt.savefig('returns_times.png')
 
 def train(agent_host):
     # Init networks
@@ -332,16 +339,17 @@ def train(agent_host):
 
     # Init vars
     global_step = 0
-    global_time = 0
     num_episode = 0
     epsilon = 1
     start_time = time.time()
     returns = []
+    times = []
     episodes = []
 
     # Begin main loop
     loop = tqdm(total=MAX_GLOBAL_STEPS, position=0, leave=False)
     while global_step < MAX_GLOBAL_STEPS:
+        episode_start_time = time.time()
         episode_step = 0
         episode_return = 0
         episode_loss = 0
@@ -404,7 +412,7 @@ def train(agent_host):
 
             # Learn
             global_step += 1
-            if global_step > START_TRAINING and global_step%LEARN_FREQUENCY ==0:
+            if global_step > START_TRAINING and global_step % LEARN_FREQUENCY == 0:
                 batch = prepare_batch(replay_buffer)
                 loss = learn(batch, optim, q_network, target_network)
                 episode_loss += loss
@@ -414,17 +422,18 @@ def train(agent_host):
 
                 if global_step % TARGET_UPDATE == 0:
                     target_network.load_state_dict(q_network.state_dict())
-
+        episode_time = (time.time() - episode_start_time)
         num_episode += 1
         returns.append(episode_return)
         episodes.append(num_episode)
+        times.append(episode_time)
         avg_return = sum(returns[-min(len(returns), 10):]) / min(len(returns), 10)
         loop.update(episode_step)
         loop.set_description('Episode: {} Steps: {} Time: {:.2f} Loss: {:.2f} Last Return: {:.2f} Avg Return: {:.2f}'.format(
             num_episode, global_step, (time.time() - start_time) / 60, episode_loss, episode_return, avg_return))
 
         if num_episode > 0:
-            log_returns(episodes, returns)
+            log_returns(episodes, returns, times)
             print()
 
 
