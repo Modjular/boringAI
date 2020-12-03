@@ -131,18 +131,39 @@ class DiamondCollector(gym.Env):
         return self.obs.flatten(), reward, done, dict()
 
     def get_mission_xml(self):
+        block_type = ['dirt', 'stone']
+        tunnel_xml = ''
+        for i in range(1, self.tunnel_len + 1):
+            tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
+        for i in range(-5, 6):
+            if i%2 == 0:
+                tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(self.tunnel_len) + "\' type=\'coal_block\' />"
+            else:
+                tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" + str(self.tunnel_len) + "\' type=\'quartz_block\' />"
+        for i in range(-5, 6):
+            for j in range(2,5):
+                tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'" + str(j) + "\' z=\'1\' type=\'glass\' />"
+        for i in range(1, self.tunnel_len + 1):
+            for j in range(2, 5):
+                tunnel_xml += "<DrawBlock x=\'-5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
+                tunnel_xml += "<DrawBlock x=\'5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
+
+
+        tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'1\' type=\'air\' />"
+        tunnel_xml += "<DrawBlock x=\'0\' y=\'3\' z=\'1\' type=\'air\' />"
+
         return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                 <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
                     <About>
-                        <Summary>Diamond Collector</Summary>
+                        <Summary>Tunnel Crawler</Summary>
                     </About>
 
                     <ServerSection>
                         <ServerInitialConditions>
                             <Time>
                                 <StartTime>12000</StartTime>
-                                <AllowPassageOfTime>false</AllowPassageOfTime>
+                                <AllowPassageOfTime>true</AllowPassageOfTime>
                             </Time>
                             <Weather>clear</Weather>
                         </ServerInitialConditions>
@@ -150,40 +171,42 @@ class DiamondCollector(gym.Env):
                             <FlatWorldGenerator generatorString="3;7,2;1;"/>
                             <DrawingDecorator>''' + \
                                 "<DrawCuboid x1='{}' x2='{}' y1='2' y2='2' z1='{}' z2='{}' type='air'/>".format(-self.size, self.size, -self.size, self.size) + \
-                                "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1' z1='{}' z2='{}' type='stone'/>".format(-self.size, self.size, -self.size, self.size) + \
-                                "".join(["<DrawBlock x='{}'  y='2' z='{}' type='diamond_ore' />".format(randint(-self.size, self.size), randint(-self.size, self.size)) for _ in range(int(4*self.size*self.size*self.reward_density))]) + \
-                                "".join(["<DrawBlock x='{}'  y='1' z='{}' type='lava' />".format(randint(-self.size, self.size), randint(-self.size, self.size)) for _ in range(int(4*self.size*self.size*self.penalty_density))]) + \
+                                "<DrawCuboid x1='{}' x2='{}' y1='1' y2='1' z1='{}' z2='{}' type='grass'/>".format(-self.size, self.size, -self.size, self.size) + \
+                                tunnel_xml + \
                                 '''<DrawBlock x='0'  y='2' z='0' type='air' />
-                                <DrawBlock x='0'  y='1' z='0' type='stone' />
+                                <DrawBlock x='0'  y='1' z='0' type='grass' />
                             </DrawingDecorator>
                             <ServerQuitWhenAnyAgentFinishes/>
                         </ServerHandlers>
                     </ServerSection>
 
                     <AgentSection mode="Survival">
-                        <Name>CS175DiamondCollector</Name>
+                        <Name>Tunnel Crawler</Name>
                         <AgentStart>
                             <Placement x="0.5" y="2" z="0.5" pitch="45" yaw="0"/>
                             <Inventory>
                                 <InventoryItem slot="0" type="diamond_pickaxe"/>
+                                <InventoryItem slot="1" type="diamond_shovel"/>
                             </Inventory>
                         </AgentStart>
                         <AgentHandlers>
-                            <DiscreteMovementCommands/>
-                            <RewardForCollectingItem>
-                                <Item type="diamond" reward="1" />
-                            </RewardForCollectingItem>
-                            <RewardForMissionEnd rewardForDeath="-1">
-                                <Reward reward="0" description="Mission End"/>
-                            </RewardForMissionEnd>
+                            <ContinuousMovementCommands/>
+                            <InventoryCommands/>
+                            <ObservationFromFullInventory flat="false"/>
                             <ObservationFromFullStats/>
+                            <RewardForCollectingItem>
+                                <Item reward='1' type='dirt'/>
+                                <Item reward='1' type='stone'/>
+                            </RewardForCollectingItem>
                             <ObservationFromGrid>
                                 <Grid name="floorAll">
                                     <min x="-'''+str(int(self.obs_size/2))+'''" y="-1" z="-'''+str(int(self.obs_size/2))+'''"/>
                                     <max x="'''+str(int(self.obs_size/2))+'''" y="0" z="'''+str(int(self.obs_size/2))+'''"/>
                                 </Grid>
                             </ObservationFromGrid>
-                            <AgentQuitFromReachingCommandQuota total="'''+str(self.max_episode_steps)+'''" />
+                            <AgentQuitFromTouchingBlockType>
+                                <Block type="coal_block"/>
+                            </AgentQuitFromTouchingBlockType>
                         </AgentHandlers>
                     </AgentSection>
                 </Mission>'''
