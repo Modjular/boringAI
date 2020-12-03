@@ -9,7 +9,7 @@ import time
 import json
 import random
 from tqdm import tqdm
-from collections import deque
+from collections import deque,defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import randint
@@ -20,9 +20,10 @@ from torch.utils.data import Dataset, DataLoader
 
 
 # Hyperparameters
-TUNNEL_LEN = 20
+TUNNEL_LEN_START = 20
+TUNNEL_LEN_DELTA = 0
 SIZE = 50
-OBS_SIZE = 5
+OBS_SIZE = 3
 MAX_EPISODE_STEPS = 5
 MAX_GLOBAL_STEPS = 1000
 REPLAY_BUFFER_SIZE = 10000
@@ -34,6 +35,7 @@ TARGET_UPDATE = 100
 LEARNING_RATE = 1e-4
 START_TRAINING = 500
 LEARN_FREQUENCY = 1
+
 ACTION_DICT = {
     0: ['hotbar.1 1','hotbar.1 0']  ,#switch to pickaxe
     1: ['hotbar.2 1',' hotbar.2 0'], #switch to shovel
@@ -54,20 +56,21 @@ class QNetwork(nn.Module):
         return self.net(obs_flat)
 
 
-def GetMissionXML():
+def GetMissionXML(num_episode):
     block_type = ['dirt', 'stone','log']
     tunnel_xml = ''
-    for i in range(1, TUNNEL_LEN + 1):
+    tunnel_len = TUNNEL_LEN_START + num_episode*TUNNEL_LEN_DELTA
+    for i in range(1, tunnel_len + 1):
         tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
     for i in range(-5, 6):
         if i%2 == 0:
-            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'"+str(TUNNEL_LEN +1) + "\' type=\'coal_block\' />"
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'"+str(tunnel_len +1) + "\' type=\'coal_block\' />"
         else:
-            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'" +str(TUNNEL_LEN+1) + "\' type=\'quartz_block\' />"
+            tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'1\' z=\'"+str(tunnel_len+1) + "\' type=\'quartz_block\' />"
     for i in range(-5, 6):
         for j in range(2,5):
             tunnel_xml += "<DrawBlock x=\'" + str(i) + "\' y=\'" + str(j) + "\' z=\'1\' type=\'glass\' />"
-    for i in range(1, TUNNEL_LEN + 1):
+    for i in range(1, tunnel_len + 1):
         for j in range(2, 5):
             tunnel_xml += "<DrawBlock x=\'-5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
             tunnel_xml += "<DrawBlock x=\'5\' y=\'" + str(j) + "\' z=\'"+ str(i) + "\' type=\'glass\' />"
@@ -119,7 +122,7 @@ def GetMissionXML():
                         <InventoryCommands/>
                         <ObservationFromFullInventory flat="false"/>
                         <ObservationFromFullStats/>
-                        <RewardForTimeTaken initialReward = "100"  delta = "-1" density = "MISSION_END"/>
+                        <RewardForTimeTaken initialReward = "0"  delta = "1" density = "MISSION_END"/>
                         <ObservationFromGrid>
                             <Grid name="floorAll">
                                 <min x="-'''+str(int(OBS_SIZE/2))+'''" y="-1" z="-'''+str(int(OBS_SIZE/2))+'''"/>
@@ -155,8 +158,8 @@ def get_action(obs, q_network, epsilon, allow_break_action):
     return action_idx
 
 
-def init_malmo(agent_host):
-    my_mission = MalmoPython.MissionSpec(GetMissionXML(), True)
+def init_malmo(agent_host, num_episode):
+    my_mission = MalmoPython.MissionSpec(GetMissionXML(num_episode), True)
     my_mission_record = MalmoPython.MissionRecordSpec()
     my_mission.requestVideo(800, 500)
     my_mission.setViewpoint(1)
@@ -195,7 +198,12 @@ def get_observation(world_state):
 
             # Get observation
             grid = observations['floorAll']
-            grid_binary = [1 for x in grid]
+            block_dict = defaultdict(lambda:0)
+            block_dict["stone"]=1
+            block_dict["dirt"]=2
+            block_dict["log"]=3
+
+            grid_binary = [block_dict[x] for x in grid]
             obs = np.reshape(grid_binary, (2, OBS_SIZE, OBS_SIZE))
 
             # Rotate observation with orientation of agent
@@ -300,14 +308,14 @@ def get_inv_observation(world_state):
 
     return inv_obs
 
-def log_returns(times, returns):
+def log_returns(x, y):
     # box = np.ones(10) / 10
     # returns_smooth = np.convolve(returns, box, mode='same')
     plt.clf()
-    plt.plot(times, returns)
+    plt.plot(x, y)
     plt.title('Secret Tunnel')
     plt.ylabel('Reward')
-    plt.xlabel('Time')
+    plt.xlabel('Episodes')
     plt.savefig('returns.png')
 
 def train(agent_host):
@@ -329,7 +337,7 @@ def train(agent_host):
     epsilon = 1
     start_time = time.time()
     returns = []
-    times = []
+    episodes = []
 
     # Begin main loop
     loop = tqdm(total=MAX_GLOBAL_STEPS, position=0, leave=False)
@@ -340,7 +348,7 @@ def train(agent_host):
         done = False
 
         # Setup Malmo
-        agent_host = init_malmo(agent_host)
+        agent_host = init_malmo(agent_host, num_episode) # tunnel length is dependent on num_episode
         world_state = agent_host.getWorldState()
         while not world_state.has_mission_begun:
             time.sleep(0.1)
@@ -352,7 +360,7 @@ def train(agent_host):
         # Run episode
         while world_state.is_mission_running:
             # Get action
-            allow_break_action = obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 1
+            allow_break_action = obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] !=0
             action_idx = get_action(obs, q_network, epsilon, allow_break_action)
             commands = ACTION_DICT[action_idx]#switch tools
 
@@ -364,7 +372,7 @@ def train(agent_host):
             agent_host.sendCommand("move 1")
 
             # If your agent isn't registering reward you may need to increase this
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             # We have to manually calculate terminal state to give malmo time to register the end of the mission
             # If you see "commands connection is not open. Is the mission running?" you may need to increase this
@@ -385,7 +393,8 @@ def train(agent_host):
             reward = 0
             #Get reward
             for r in world_state.rewards:
-                reward =r.getValue()
+                tunnel_length = num_episode*TUNNEL_LEN_DELTA + TUNNEL_LEN_START
+                reward =(tunnel_length)/(r.getValue())*1000
 
             episode_return += reward
 
@@ -395,8 +404,7 @@ def train(agent_host):
 
             # Learn
             global_step += 1
-            global_time += (time.time() - start_time) / 60
-            if global_step > START_TRAINING and global_step % LEARN_FREQUENCY == 0:
+            if global_step > START_TRAINING and global_step%LEARN_FREQUENCY ==0:
                 batch = prepare_batch(replay_buffer)
                 loss = learn(batch, optim, q_network, target_network)
                 episode_loss += loss
@@ -408,16 +416,15 @@ def train(agent_host):
                     target_network.load_state_dict(q_network.state_dict())
 
         num_episode += 1
-        print(epsilon)
         returns.append(episode_return)
-        times.append(global_time)
+        episodes.append(num_episode)
         avg_return = sum(returns[-min(len(returns), 10):]) / min(len(returns), 10)
         loop.update(episode_step)
         loop.set_description('Episode: {} Steps: {} Time: {:.2f} Loss: {:.2f} Last Return: {:.2f} Avg Return: {:.2f}'.format(
             num_episode, global_step, (time.time() - start_time) / 60, episode_loss, episode_return, avg_return))
 
         if num_episode > 0:
-            log_returns(times, returns)
+            log_returns(episodes, returns)
             print()
 
 
