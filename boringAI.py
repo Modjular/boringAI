@@ -23,7 +23,7 @@ from torch.utils.data import Dataset, DataLoader
 TUNNEL_LEN_START = 20
 TUNNEL_LEN_DELTA = 0
 SIZE = 50
-OBS_SIZE = 3
+OBS_SIZE = 2#only forward direction CURRENT AND FORWARD = one each
 MAX_EPISODE_STEPS = 5
 MAX_GLOBAL_STEPS = 1000
 REPLAY_BUFFER_SIZE = 10000
@@ -125,8 +125,8 @@ def GetMissionXML(num_episode):
                         <RewardForTimeTaken initialReward = "0"  delta = "1" density = "MISSION_END"/>
                         <ObservationFromGrid>
                             <Grid name="floorAll">
-                                <min x="-'''+str(int(OBS_SIZE/2))+'''" y="-1" z="-'''+str(int(OBS_SIZE/2))+'''"/>
-                                <max x="'''+str(int(OBS_SIZE/2))+'''" y="0" z="'''+str(int(OBS_SIZE/2))+'''"/>
+                                <min x = "0" y = "-1" z = "0"/>
+                                <max x="0" y="0" z="'''+str(int(OBS_SIZE)-1)+'''"/>
                             </Grid>
                         </ObservationFromGrid>
                          <AgentQuitFromTouchingBlockType>
@@ -147,6 +147,7 @@ def get_action(obs, q_network, epsilon, allow_break_action):
         # Calculate Q-values fot each action
         obs_torch = torch.tensor(obs.copy(), dtype=torch.float).unsqueeze(0)
         action_values = q_network(obs_torch)
+
 
         # Remove attack/mine from possible actions if not facing a diamond
         if not allow_break_action:
@@ -183,7 +184,7 @@ def init_malmo(agent_host, num_episode):
 
 
 def get_observation(world_state):
-    obs = np.zeros((2, OBS_SIZE, OBS_SIZE))
+    obs = np.zeros(OBS_SIZE)
 
     while world_state.is_mission_running:
         time.sleep(0.1)
@@ -202,18 +203,10 @@ def get_observation(world_state):
             block_dict["stone"]=1
             block_dict["dirt"]=2
             block_dict["log"]=3
-
+            #print(grid[-1]) #to print the block in front
             grid_binary = [block_dict[x] for x in grid]
-            obs = np.reshape(grid_binary, (2, OBS_SIZE, OBS_SIZE))
-
+            obs = np.reshape(grid_binary, (2,OBS_SIZE))
             # Rotate observation with orientation of agent
-            yaw = observations['Yaw']
-            if yaw == 270:
-                obs = np.rot90(obs, k=1, axes=(1, 2))
-            elif yaw == 0:
-                obs = np.rot90(obs, k=2, axes=(1, 2))
-            elif yaw == 90:
-                obs = np.rot90(obs, k=3, axes=(1, 2))
 
             break
 
@@ -327,8 +320,8 @@ def log_returns(episodes, returns, times):
 
 def train(agent_host):
     # Init networks
-    q_network = QNetwork((2, OBS_SIZE, OBS_SIZE), len(ACTION_DICT))
-    target_network = QNetwork((2, OBS_SIZE, OBS_SIZE), len(ACTION_DICT))
+    q_network = QNetwork(( 2,OBS_SIZE), len(ACTION_DICT))
+    target_network = QNetwork((2,OBS_SIZE), len(ACTION_DICT))
     target_network.load_state_dict(q_network.state_dict())
 
     # Init optimizer
@@ -368,16 +361,21 @@ def train(agent_host):
         # Run episode
         while world_state.is_mission_running:
             # Get action
-            allow_break_action = obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] !=0
+            allow_break_action = obs[1,1] !=0
             action_idx = get_action(obs, q_network, epsilon, allow_break_action)
             commands = ACTION_DICT[action_idx]#switch tools
 
             # Take step
+
+            agent_host.sendCommand("move 1")
             for command in commands:
                 agent_host.sendCommand(command)
-            if allow_break_action:
+            while allow_break_action:
+                agent_host.sendCommand("move 0")
                 agent_host.sendCommand("attack 1")
-            agent_host.sendCommand("move 1")
+                obs1 = get_observation(world_state)
+                allow_break_action = obs1[1,1] !=0
+            agent_host.sendCommand("attack 0")
 
             # If your agent isn't registering reward you may need to increase this
             time.sleep(0.5)
@@ -385,10 +383,7 @@ def train(agent_host):
             # We have to manually calculate terminal state to give malmo time to register the end of the mission
             # If you see "commands connection is not open. Is the mission running?" you may need to increase this
             episode_step += 1
-            if episode_step >= MAX_EPISODE_STEPS or \
-                    (obs[0, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 1 and \
-                    obs[1, int(OBS_SIZE/2)-1, int(OBS_SIZE/2)] == 0 and \
-                    command == 'move 1'):
+            if (episode_step >= MAX_EPISODE_STEPS):
                 done = True
                 time.sleep(2)
 
@@ -402,7 +397,7 @@ def train(agent_host):
             #Get reward
             for r in world_state.rewards:
                 tunnel_length = num_episode*TUNNEL_LEN_DELTA + TUNNEL_LEN_START
-                reward =(tunnel_length)/(r.getValue())*1000
+                reward =(tunnel_length)/(r.getValue())*10000
 
             episode_return += reward
 
