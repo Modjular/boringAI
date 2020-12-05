@@ -25,15 +25,15 @@ TUNNEL_LEN_DELTA = 0
 SIZE = 50
 OBS_SIZE = 2#only forward direction CURRENT AND FORWARD = one each
 MAX_EPISODE_STEPS = 5
-MAX_GLOBAL_STEPS = 1000
+MAX_GLOBAL_STEPS = 5000
 REPLAY_BUFFER_SIZE = 10000
-EPSILON_DECAY = .99
+EPSILON_DECAY = .999
 MIN_EPSILON = .1
 BATCH_SIZE = 128
 GAMMA = .9
 TARGET_UPDATE = 100
 LEARNING_RATE = 1e-4
-START_TRAINING = 500
+START_TRAINING = 250
 LEARN_FREQUENCY = 1
 
 ACTION_DICT = {
@@ -184,7 +184,7 @@ def init_malmo(agent_host, num_episode):
 
 
 def get_observation(world_state):
-    obs = np.zeros(OBS_SIZE)
+    obs = np.zeros((2,OBS_SIZE))
 
     while world_state.is_mission_running:
         time.sleep(0.1)
@@ -207,7 +207,6 @@ def get_observation(world_state):
             grid_binary = [block_dict[x] for x in grid]
             obs = np.reshape(grid_binary, (2,OBS_SIZE))
             # Rotate observation with orientation of agent
-
             break
 
     return obs
@@ -228,11 +227,11 @@ def prepare_batch(replay_buffer):
         done (tensor): float tensor of size (BATCH_SIZE)
     """
     batch_data = random.sample(replay_buffer, BATCH_SIZE)
-    obs = torch.tensor([x[0] for x in batch_data], dtype=torch.float)
-    action = torch.tensor([x[1] for x in batch_data], dtype=torch.long)
-    next_obs = torch.tensor([x[2] for x in batch_data], dtype=torch.float)
-    reward = torch.tensor([x[3] for x in batch_data], dtype=torch.float)
-    done = torch.tensor([x[4] for x in batch_data], dtype=torch.float)
+    obs = torch.tensor(np.array([x[0] for x in batch_data]), dtype=torch.float)
+    action = torch.tensor(np.array([x[1] for x in batch_data]), dtype=torch.long)
+    next_obs = torch.tensor(np.array([x[2] for x in batch_data]), dtype=torch.float)
+    reward = torch.tensor(np.array([x[3] for x in batch_data]), dtype=torch.float)
+    done = torch.tensor(np.array([x[4] for x in batch_data]), dtype=torch.float)
 
     return obs, action, next_obs, reward, done
 
@@ -364,21 +363,18 @@ def train(agent_host):
             allow_break_action = obs[1,1] !=0
             action_idx = get_action(obs, q_network, epsilon, allow_break_action)
             commands = ACTION_DICT[action_idx]#switch tools
-
+            agent_host.sendCommand("move 0")
             # Take step
-
-            agent_host.sendCommand("move 1")
             for command in commands:
                 agent_host.sendCommand(command)
             while allow_break_action:
-                agent_host.sendCommand("move 0")
                 agent_host.sendCommand("attack 1")
                 obs1 = get_observation(world_state)
                 allow_break_action = obs1[1,1] !=0
             agent_host.sendCommand("attack 0")
-
+            agent_host.sendCommand("move 1")
             # If your agent isn't registering reward you may need to increase this
-            time.sleep(0.5)
+            time.sleep(0.3)
 
             # We have to manually calculate terminal state to give malmo time to register the end of the mission
             # If you see "commands connection is not open. Is the mission running?" you may need to increase this
@@ -397,7 +393,7 @@ def train(agent_host):
             #Get reward
             for r in world_state.rewards:
                 tunnel_length = num_episode*TUNNEL_LEN_DELTA + TUNNEL_LEN_START
-                reward =(tunnel_length)/(r.getValue())*10000
+                reward =int((tunnel_length)/(r.getValue())*10000)
 
             episode_return += reward
 
