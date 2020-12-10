@@ -15,6 +15,7 @@ from numpy.random import randint
 import gym, ray
 from gym.spaces import Discrete, Box
 from ray.rllib.agents import ppo
+import random
 
 
 class DiamondCollector(gym.Env):
@@ -22,16 +23,16 @@ class DiamondCollector(gym.Env):
     def __init__(self, env_config):  
         # Static Parameters
         self.size = 50
+        self.tunnel_len = 20
         self.reward_density = .1
         self.penalty_density = .02
-        self.obs_size = 5
+        self.obs_size = 3
         self.max_episode_steps = 100
         self.log_frequency = 10
         self.action_dict = {
-            0: 'move 1',  # Move one block forward
-            1: 'turn 1',  # Turn 90 degrees to the right
-            2: 'turn -1',  # Turn 90 degrees to the left
-            3: 'attack 1'  # Destroy block
+            0: ['hotbar.1 1','hotbar.1 0']  ,#switch to pickaxe
+            1: ['hotbar.2 1',' hotbar.2 0'], #switch to shovel
+            2: ['hotbar.3 1','hotbar.3 0'] #switch to axe
         }
 
         # Rllib Parameters
@@ -86,6 +87,7 @@ class DiamondCollector(gym.Env):
         return self.obs.flatten()
 
     def step(self, action):
+        # print('DEBUG', action)
         """
         Take an action in the environment and return the results.
 
@@ -100,19 +102,24 @@ class DiamondCollector(gym.Env):
         """
 
         # Get Action
-        command = self.action_dict[action]
-        allow_break_action = self.obs[1, int(self.obs_size/2)-1, int(self.obs_size/2)] == 1
-        if command != 'attack 1' or allow_break_action:
+        commands = self.action_dict[action]
+        # allow_break_action = self.obs[1, int(self.obs_size/2)-1, int(self.obs_size/2)] != 0
+        # print("ALLOW BREAK", allow_break_action)
+        for command in commands:
             self.agent_host.sendCommand(command)
-            time.sleep(.1)
-            self.episode_step += 1
+
+        # if allow_break_action:
+        self.agent_host.sendCommand('attack 1')
+        time.sleep(.1)
+        self.episode_step += 1
+
+        self.agent_host.sendCommand('move 1')
 
         # Get Done
         done = False
         if self.episode_step >= self.max_episode_steps or \
                 (self.obs[0, int(self.obs_size/2)-1, int(self.obs_size/2)] == 1 and \
-                self.obs[1, int(self.obs_size/2)-1, int(self.obs_size/2)] == 0 and \
-                command == 'move 1'):
+                self.obs[1, int(self.obs_size/2)-1, int(self.obs_size/2)] == 0):
             done = True
             time.sleep(2)  
 
@@ -131,7 +138,7 @@ class DiamondCollector(gym.Env):
         return self.obs.flatten(), reward, done, dict()
 
     def get_mission_xml(self):
-        block_type = ['dirt', 'stone']
+        block_type = ['dirt', 'stone','log']
         tunnel_xml = ''
         for i in range(1, self.tunnel_len + 1):
             tunnel_xml += "<DrawBlock x=\'0\' y=\'2\' z=\'" + str(i) + "\' type=\'" + random.choice(block_type) + "\' />"
@@ -163,7 +170,7 @@ class DiamondCollector(gym.Env):
                         <ServerInitialConditions>
                             <Time>
                                 <StartTime>12000</StartTime>
-                                <AllowPassageOfTime>true</AllowPassageOfTime>
+                                <AllowPassageOfTime>false</AllowPassageOfTime>
                             </Time>
                             <Weather>clear</Weather>
                         </ServerInitialConditions>
@@ -187,6 +194,7 @@ class DiamondCollector(gym.Env):
                             <Inventory>
                                 <InventoryItem slot="0" type="diamond_pickaxe"/>
                                 <InventoryItem slot="1" type="diamond_shovel"/>
+                                <InventoryItem slot="2" type="diamond_axe"/>
                             </Inventory>
                         </AgentStart>
                         <AgentHandlers>
