@@ -316,9 +316,9 @@ class BoringAI(gym.Env):
         plt.title('BoringAI Continuous Sparse')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('returns_' + str(self.start_time) + '.png')
+        plt.savefig('returns.png')
 
-        with open('returns_' + str(self.start_time) + '.txt', 'w') as f:
+        with open('returns.txt', 'w') as f:
             for step, value in zip(self.steps, self.returns):
                 f.write("{}\t{}\n".format(step, value)) 
 
