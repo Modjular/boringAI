@@ -62,6 +62,7 @@ class BoringAI(gym.Env):
         self.episode_step = 0
         self.episode_return = 0
         self.returns = []
+        self.episodes = []
         self.steps = []
         self.initial_reward = INITIAL_REWARD  # used per episode to keep track of decreasing reward
 
@@ -77,6 +78,10 @@ class BoringAI(gym.Env):
 
         # Reset Variables
         self.returns.append(self.episode_return)
+        # if self.episodes == []:
+        #     self.epsiodes = [0]
+        # else:
+        #     self.episodes.append(self.episodes[-1] + 1)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0
@@ -85,8 +90,7 @@ class BoringAI(gym.Env):
 
 
         # Log
-        if len(self.returns) > self.log_frequency and \
-            len(self.returns) % self.log_frequency == 0:
+        if len(self.returns) > 0:
             self.log_returns()
 
         # Get Observation
@@ -130,7 +134,6 @@ class BoringAI(gym.Env):
                 for r in world_state.rewards:   # these deltas will be lost otherwise
                     reward_delta += r.getValue()
                 _, self.allow_break_action = self.get_observation(world_state)
-
         else:                           
             
             # just move forward if no block in front
@@ -165,7 +168,7 @@ class BoringAI(gym.Env):
         if done:
             reward += self.initial_reward   # add to reward so it can get passed out
             print("END REWARD", self.initial_reward)
-
+    
         self.episode_return += reward
 
         return [self.obs, 1 if self.allow_break_action else 0], reward, done, dict()
@@ -339,18 +342,16 @@ class BoringAI(gym.Env):
             steps (list): list of global steps after each episode
             returns (list): list of total return of each episode
         """
-        box = np.ones(self.log_frequency) / self.log_frequency
-        returns_smooth = np.convolve(self.returns, box, mode='same')
+        # box = np.ones(self.log_frequency) / self.log_frequency
+        # returns_smooth = np.convolve(self.returns, box, mode='same')
+        # print(self.episodes)
+        # print(self.returns)
         plt.clf()
-        plt.plot(self.steps, returns_smooth)
+        plt.plot(list(range(len(self.returns))), self.returns)
         plt.title('BoringAI Continuous Sparse')
         plt.ylabel('Return')
-        plt.xlabel('Steps')
+        plt.xlabel('Episodes')
         plt.savefig('returns.png')
-
-        with open('returns.txt', 'w') as f:
-            for step, value in zip(self.steps, self.returns):
-                f.write("{}\t{}\n".format(step, value)) 
 
 
 if __name__ == '__main__':
