@@ -1,5 +1,5 @@
 # Rllib docs: https://docs.ray.io/en/latest/rllib.html
-# 
+#
 # This AI waits for the block to break before moving on to the next step
 
 
@@ -14,6 +14,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.random import randint
+from collections import defaultdict
 
 import gym, ray
 from gym.spaces import Discrete, MultiDiscrete
@@ -25,7 +26,7 @@ INITIAL_REWARD = 400
 
 class BoringAI(gym.Env):
 
-    def __init__(self, env_config):  
+    def __init__(self, env_config):
         # Static Parameters
         self.size = 10
         self.reward_density = .1
@@ -38,8 +39,9 @@ class BoringAI(gym.Env):
 
         # BoringAI parameters
         self.tunnel_len = 9
-        self.block_type = ['dirt', 'stone', 'planks']
-        self.block_dict = {'air': 0, 'dirt': 1, 'stone': 2, 'planks': 3}
+        self.block_type = ['stone', 'dirt', 'planks']
+        self.block_dict = {'stone': 0, 'dirt': 1, 'planks': 2, 'air': 3,
+                'bedrock':3}
 
         # Rllib Parameters
         # self.action_space = Box(-1, 1, shape=(3,), dtype=np.float32)
@@ -64,6 +66,8 @@ class BoringAI(gym.Env):
         self.returns = []
         self.steps = []
         self.initial_reward = INITIAL_REWARD  # used per episode to keep track of decreasing reward
+        self.episode_action_log = defaultdict(lambda:[0,0]) # for each ep, [right uses,total]
+        self.action_log = defaultdict(lambda:[]) #for each tool, has a list of percentage used correctly per episode
 
     def reset(self):
         """
@@ -82,12 +86,13 @@ class BoringAI(gym.Env):
         self.episode_return = 0
         self.episode_step = 0
         self.initial_reward = INITIAL_REWARD
-
+        self.episode_actions = defaultdict(lambda:[0,0])
 
         # Log
-        if len(self.returns) > self.log_frequency and \
-            len(self.returns) % self.log_frequency == 0:
+        if len(self.returns) > 0:
             self.log_returns()
+        if len(self.action_log) >0:
+            self.log_actions()
 
         # Get Observation
         self.obs, self.allow_break_action = self.get_observation(world_state)
@@ -108,12 +113,16 @@ class BoringAI(gym.Env):
             done: <bool> indicates terminal state
             info: <dict> dictionary of extra information
         """
-        reward_delta = 0 # calling getWorldState() below loses our reward delta 
+        #increment total blocks used for the tool
+        self.episode_action_log[action][1] +=1
+        #increment correct usage
+        if (action%3==self.obs):
+            self.episode_action_log[action][0]+=1
+        reward_delta = 0 # calling getWorldState() below loses our reward delta
 
         # Get Action
-        if self.allow_break_action:     
-            
-            # switch tools, start digging
+        if self.allow_break_action:
+        # switch tools, start digging
             self.agent_host.sendCommand('move 0');
             self.agent_host.sendCommand('hotbar.' + str(action + 1) + ' 1')
             self.agent_host.sendCommand('attack 1')
@@ -125,18 +134,17 @@ class BoringAI(gym.Env):
             # Otherwise, it might switch randomly, resetting the breaking
 
             while self.allow_break_action:
-                time.sleep(0.1) # give it a sec to do its thang
+                time.sleep(0.2)
                 world_state = self.agent_host.getWorldState()
                 for r in world_state.rewards:   # these deltas will be lost otherwise
                     reward_delta += r.getValue()
                 _, self.allow_break_action = self.get_observation(world_state)
 
-        else:                           
-            
-            # just move forward if no block in front
-            self.agent_host.sendCommand('attack 0')
-            self.agent_host.sendCommand('move 1');
-            time.sleep(0.2)
+
+        # just move forward if no block in front
+        self.agent_host.sendCommand('attack 0')
+        self.agent_host.sendCommand('move 1');
+        time.sleep(0.5)
 
         self.episode_step += 1
 
@@ -145,10 +153,10 @@ class BoringAI(gym.Env):
         world_state = self.agent_host.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs, self.allow_break_action = self.get_observation(world_state) 
+        self.obs, self.allow_break_action = self.get_observation(world_state)
 
         # Get Done
-        done = not world_state.is_mission_running 
+        done = not world_state.is_mission_running
 
         # Get Reward
         reward = 0
@@ -156,14 +164,20 @@ class BoringAI(gym.Env):
             reward_delta += r.getValue()
         self.initial_reward += reward_delta     # decrement reward
         print("REWARD DELTA: ", reward_delta)
-        
+
         # NOTE
         # "Error: AgentHost::sendCommand : commands connection is not open. Is the mission running?"
         # The error above causes <RewardForTimeTaken> to register inconsistently
         # To be consistent, we keep track of self.initial_reward internally
-        
+
         if done:
             reward += self.initial_reward   # add to reward so it can get passed out
+            for action in range(3):
+                if self.episode_action_log[action][1]==0:
+                    self.action_log[action].append(1)
+                else:
+                    self.action_log[action].append(self.episode_action_log[action][0]/self.episode_action_log[action][1])
+                print(self.episode_action_log[action])
             print("END REWARD", self.initial_reward)
 
         self.episode_return += reward
@@ -171,9 +185,9 @@ class BoringAI(gym.Env):
         return [self.obs, 1 if self.allow_break_action else 0], reward, done, dict()
 
     def get_mission_xml(self):
-        
+
         tunnel_xml = ''
-        
+
         # Finish Line
         for i in range(-5, 6):
             if i%2 == 0:
@@ -196,14 +210,14 @@ class BoringAI(gym.Env):
         # But it wasn't really learning. Just chance
         # Defining equal amounts of each block = more consistency
         blocks = ['stone', 'stone', 'stone', 'dirt', 'dirt', 'dirt', 'planks', 'planks', 'planks']
-        random.shuffle(blocks)  
+        random.shuffle(blocks)
 
         # Blocks to Break
         for i in range(0, self.tunnel_len):
             tunnel_xml += "<DrawBlock x='0' y='2' z='{}' type='{}' />".format(i + 1, blocks[i])
             # tunnel_xml += "<DrawBlock x=\'0\' y=\'3\' z=\'" + str(i) + "\' type=\'" + random_block + "\' />"      # uncomment for 2nd row
 
- 
+
         return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                 <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -326,7 +340,7 @@ class BoringAI(gym.Env):
 
                 # For extra safety, the ground is unbreakable bedrock
                 allow_break_action = observations['LineOfSight']['type'] != 'bedrock'
-                
+
                 break
 
         return obs, allow_break_action
@@ -339,19 +353,40 @@ class BoringAI(gym.Env):
             steps (list): list of global steps after each episode
             returns (list): list of total return of each episode
         """
+        """
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.returns, box, mode='same')
+        """
+        plt.figure()
         plt.clf()
-        plt.plot(self.steps, returns_smooth)
+        plt.plot(list(range(len(self.returns))), self.returns)
         plt.title('BoringAI Continuous Sparse')
         plt.ylabel('Return')
-        plt.xlabel('Steps')
+        plt.xlabel('Episodes')
         plt.savefig('returns.png')
+    def log_actions(self):
+        """
+        Log the number of actions taken correctly. e.g. axe to plank
 
-        with open('returns.txt', 'w') as f:
-            for step, value in zip(self.steps, self.returns):
-                f.write("{}\t{}\n".format(step, value)) 
-
+        Args:
+            action_log (dict): dict of array which for each block stores a
+            number in the corresponding idx
+        """
+        plt.figure()
+        plt.style.use('seaborn-darkgrid')
+        palette = plt.get_cmap('Set1')
+        num=0
+        for tool in range(3):
+            num+=1
+            plt.plot(list(range(len(self.action_log[tool]))), self.action_log[tool],
+                    marker='', color=palette(num), linewidth=1, alpha=0.9,
+                    label=tool)
+            print(self.action_log[tool])
+        plt.legend(loc=2, ncol=2)
+        plt.title("Tool Usage Statistics", loc='left', fontsize=12, fontweight=0, color='orange')
+        plt.xlabel("Episode")
+        plt.ylabel("Percentage Correctly Used")
+        plt.savefig("toolstats.png")
 
 if __name__ == '__main__':
     ray.init()
