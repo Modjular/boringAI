@@ -39,7 +39,7 @@ class BoringAI(gym.Env):
         # BoringAI parameters
         self.tunnel_len = 9
         self.block_type = ['dirt', 'stone', 'planks']
-        self.block_dict = {'air': 0, 'dirt': 1, 'stone': 2, 'planks': 3}
+        self.block_dict = {'air': 0, 'dirt': 1, 'stone': 2, 'planks': 3, 'bedrock': 0}
 
         # Rllib Parameters
         # self.action_space = Box(-1, 1, shape=(3,), dtype=np.float32)
@@ -185,13 +185,21 @@ class BoringAI(gym.Env):
                 tunnel_xml += "<DrawBlock x='{}' y='1' z='{}' type='quartz_block' />".format(i, self.tunnel_len + 1)
 
         # Glass Box
-        tunnel_xml += "<DrawCuboid x1='-5' x2='5'  y1='2' y2='4' z1='1' z2='1'  type='glass'/>"
-        tunnel_xml += "<DrawCuboid x1='-5' x2='-5' y1='2' y2='4' z1='1' z2='{}' type='glass'/>".format(self.tunnel_len)
-        tunnel_xml += "<DrawCuboid x1='5'  x2='5'  y1='2' y2='4' z1='1' z2='{}' type='glass'/>".format(self.tunnel_len)
+        tunnel_xml += "<DrawCuboid x1='-5' x2='5'  y1='2' y2='6' z1='1' z2='1'  type='dirt'/>"
+        tunnel_xml += "<DrawCuboid x1='-5' x2='-5' y1='2' y2='6' z1='1' z2='{}' type='dirt'/>".format(self.tunnel_len)
+        tunnel_xml += "<DrawCuboid x1='5'  x2='5'  y1='2' y2='6' z1='1' z2='{}' type='dirt'/>".format(self.tunnel_len)
+        #roof 
+        tunnel_xml += "<DrawCuboid x1='-5'  x2='5'  y1='6' y2='6' z1='1' z2='{}' type='dirt'/>".format(self.tunnel_len)
+
+        light_source = 'beacon'
+        #lights
+        for i in range(2, self.tunnel_len + 1, 3):
+            tunnel_xml += "<DrawBlock x='0' y ='6' z='{}' type='{}'   />".format(i, light_source)
+            tunnel_xml += "<DrawBlock x='-5' y ='4' z='{}' type='{}'   />".format(i, light_source)
+            tunnel_xml += "<DrawBlock x='5' y ='4' z='{}' type='{}'   />".format(i, light_source)
 
         # Draw entrance
-        #tunnel_xml += "<DrawBlock x='0' y='2' z='1' type='air' />"
-        tunnel_xml += "<DrawBlock x='0' y='3' z='1' type='air' />"
+        tunnel_xml += "<DrawCuboid x1='-1' x2='1' y1='2' y2='4' z1='1' z2='1' type='air' />"
 
         # NOTE
         # Was running into wild results because lots of stone = bad results
