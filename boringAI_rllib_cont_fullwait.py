@@ -21,8 +21,9 @@ from gym.spaces import Discrete, MultiDiscrete
 from ray.rllib.agents import ppo
 import random
 import datetime
+import pandas as pd
 
-INITIAL_REWARD = 400
+INITIAL_REWARD = 0
 
 class BoringAI(gym.Env):
 
@@ -42,6 +43,7 @@ class BoringAI(gym.Env):
         self.block_type = ['stone', 'dirt', 'planks']
         self.block_dict = {'stone': 0, 'dirt': 1, 'planks': 2, 'air': 3,
                 'bedrock':3}
+        self.tool_dict = {0:"diamond pickaxe", 1:"diamond shovel",2:"diamond axe"}
 
         # Rllib Parameters
         # self.action_space = Box(-1, 1, shape=(3,), dtype=np.float32)
@@ -65,7 +67,7 @@ class BoringAI(gym.Env):
         self.episode_return = 0
         self.returns = []
         self.steps = []
-        self.initial_reward = INITIAL_REWARD  # used per episode to keep track of decreasing reward
+        self.initial_reward = INITIAL_REWARD  # used per episode to keep track of ticks
         self.episode_action_log = defaultdict(lambda:[0,0]) # for each ep, [right uses,total]
         self.action_log = defaultdict(lambda:[]) #for each tool, has a list of percentage used correctly per episode
 
@@ -86,7 +88,7 @@ class BoringAI(gym.Env):
         self.episode_return = 0
         self.episode_step = 0
         self.initial_reward = INITIAL_REWARD
-        self.episode_actions = defaultdict(lambda:[0,0])
+        #self.episode_action_log = defaultdict(lambda:[0,0])#uncomment when you want to have per episode statistics
 
         # Log
         if len(self.returns) > 0:
@@ -96,7 +98,7 @@ class BoringAI(gym.Env):
 
         # Get Observation
         self.obs, self.allow_break_action = self.get_observation(world_state)
-
+        plt.close("all")
         # return self.obs.flatten()
         return [self.obs, 1 if self.allow_break_action else 0]
 
@@ -162,23 +164,22 @@ class BoringAI(gym.Env):
         reward = 0
         for r in world_state.rewards:
             reward_delta += r.getValue()
-        self.initial_reward += reward_delta     # decrement reward
-        print("REWARD DELTA: ", reward_delta)
+        self.initial_reward += reward_delta     # increment reward
+        print("REWARD DELTA(# ticks taken): ", reward_delta)
 
         # NOTE
         # "Error: AgentHost::sendCommand : commands connection is not open. Is the mission running?"
         # The error above causes <RewardForTimeTaken> to register inconsistently
-        # To be consistent, we keep track of self.initial_reward internally
+        # To be consistent, we keep track of seblocks/second*scalarlf.initial_reward internally
 
         if done:
-            reward += self.initial_reward   # add to reward so it can get passed out
+            #reward is converted to blocks/minute
+            reward += (int)(self.tunnel_len/self.initial_reward*20*60)   # add to reward so it can get passed out
+
             for action in range(3):
-                if self.episode_action_log[action][1]==0:
-                    self.action_log[action].append(1)
-                else:
-                    self.action_log[action].append(self.episode_action_log[action][0]/self.episode_action_log[action][1])
-                print(self.episode_action_log[action])
-            print("END REWARD", self.initial_reward)
+                self.action_log[action].append([self.episode_action_log[action][0],self.episode_action_log[action][1]])
+                self.episode_returns=self.initial_reward
+            print("END REWARD (blocks/minute)", reward)
 
         self.episode_return += reward
 
@@ -269,7 +270,7 @@ class BoringAI(gym.Env):
                                 <max x="0" y="0" z="'''+str(int(self.obs_size))+'''"/>
                                 </Grid>
                             </ObservationFromGrid>
-                            <RewardForTimeTaken initialReward="1000"  delta="-1" density= "PER_TICK"/>
+                            <RewardForTimeTaken initialReward="0"  delta="1" density= "PER_TICK"/>
                             <AgentQuitFromTouchingBlockType>
                                 <Block type="coal_block"/>
                             </AgentQuitFromTouchingBlockType>
@@ -358,12 +359,19 @@ class BoringAI(gym.Env):
         returns_smooth = np.convolve(self.returns, box, mode='same')
         """
         plt.figure()
+        plt.style.use('seaborn-darkgrid')
+        palette = plt.get_cmap('Set1')
         plt.clf()
-        plt.plot(list(range(len(self.returns))), self.returns)
-        plt.title('BoringAI Continuous Sparse')
+        plt.plot(list(range(len(self.returns))), self.returns,marker='',
+                color=palette(1), linewidth=1, alpha=0.9)
+        plt.title('BoringAI Continuous Sparse', loc='left', fontsize=12, fontweight=0,
+                color='orange')
         plt.ylabel('Return')
         plt.xlabel('Episodes')
         plt.savefig('returns.png')
+        with open('returns.txt', 'w') as f:
+            for episode, value in enumerate( self.returns):
+                f.write("{}\t{}\n".format(episode, value))
     def log_actions(self):
         """
         Log the number of actions taken correctly. e.g. axe to plank
@@ -376,17 +384,34 @@ class BoringAI(gym.Env):
         plt.style.use('seaborn-darkgrid')
         palette = plt.get_cmap('Set1')
         num=0
-        for tool in range(3):
+        for i_tool in range(3):
             num+=1
-            plt.plot(list(range(len(self.action_log[tool]))), self.action_log[tool],
+            y_values = []
+
+            stats=[0,0]
+            for tmp in self.action_log[i_tool]:
+                stats[0]+= tmp[0]
+                stats[1]+= tmp[1]
+                if stats[1]!=0:
+                    y_values.append((stats[0]/stats[1]))
+                else:
+                    y_values.append(1)
+            plt.plot(list(range(len(self.action_log[i_tool]))),y_values,
                     marker='', color=palette(num), linewidth=1, alpha=0.9,
-                    label=tool)
-            print(self.action_log[tool])
+                    label=self.tool_dict[i_tool])
         plt.legend(loc=2, ncol=2)
-        plt.title("Tool Usage Statistics", loc='left', fontsize=12, fontweight=0, color='orange')
+        plt.title("Tool Usage Statistics", loc='left', fontsize=12,
+                fontweight=0, color='orange')
         plt.xlabel("Episode")
         plt.ylabel("Percentage Correctly Used")
         plt.savefig("toolstats.png")
+        with open('toolstats.txt', 'w') as f:
+            for episode in range(len(self.action_log[0])):
+                f.write("{}\t".format(episode))
+                for  i_tool in range(3):
+                    f.write("{}\t{}\t".format(
+                            self.action_log[i_tool][episode][0],self.action_log[i_tool][episode][1]))
+                f.write("\n")
 
 if __name__ == '__main__':
     ray.init()
