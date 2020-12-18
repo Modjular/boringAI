@@ -36,10 +36,32 @@ We decided to switch to sparse rewards to increase the complexity of our problem
 
 We used two different models to train our AI. For one model, we used PPOTrainer from rlLib and for the second model, we used DQNTrainer from rlLib. 
 
+#### Proximal Policy Optimization (PPO)
+PPO uses gradient descent to optimize a policy that aims to maximize the reward. Below is the pseudocode for the ppo algorithm. 
+<img src="assets/ppo_algorithm.png" >  
+image from https://spinningup.openai.com/en/latest/algorithms/ppo.html 
+
+We chose PPO since it was easy to implement and performed fairly well. PPO starts off by randomly choosing actions in the action space. As it trains longer, it exploits rewards that it has already discovered. An example of this in our AI is when the agent learns that using a pickaxe to mine a stone block takes less time than using either an axe or shovel. This experience motivates the AI to choose this tool in its future encounters with a stone block, so that its reward is maximized.
+
+#### Deep Q Network (DQN)
+DQN combines Q-Learning with Deep Neural Networks to optimize a policy that aims to maximize the reward. Below is the pseudocode for the dqn algorithm. 
+<img src="assets/dqn_algorithm.png" >  
+image from https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
+
+We chose DQN for our secondary model since we wanted to compare how well PPO performed. Since our DQN came from the same library as PPO, it was easy to implement. 
+
 ## Evaluation
 
 ### Quantitative
 
+Returns graph for PPO \
+<img src="assets/returns_PP0_21.png" >  
+Returns graph for DQN \
+<img src="assets/returns_rllib_dqn.png" >  
+Tool Stat graph for PPO \
+<img src="assets/toolstats_PPO_21.png" >  
+Tool Stat graph for DQN \
+<img src="assets/toolstats_rllib_dqn.png" >  
 
 ### Qualitative
 Although our metrics are straightforward, our sanity check is changing tools in response to its environment. Qualitatively, we can check that it’s using the right tool (shovel) to dig through dirt. Because of the nature of our state, there are not many things we can qualitatively measure. But perhaps we will discover qualitative metrics as we progress and attempt to add more difficult states.
@@ -55,5 +77,5 @@ Matplotlib - graphing\
 iMovie - video editing
 
 Links\
-https://spinningup.openai.com/en/latest/algorithms/ppo.html
+https://spinningup.openai.com/en/latest/algorithms/ppo.html \
 https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
