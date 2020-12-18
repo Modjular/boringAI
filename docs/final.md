@@ -55,6 +55,8 @@ We chose DQN for our secondary model since we wanted to compare how well PPO per
 ## Evaluation
 
 ### Quantitative
+<img src="assets/BPM_Equation.png"> 
+
 
 PPO vs DQN Returns \
 <img src="assets/returns_PP0_21.png" width="45%"> <img src="assets/returns_rllib_dqn.png" width="45%">  
