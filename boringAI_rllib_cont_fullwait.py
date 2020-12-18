@@ -35,21 +35,28 @@ class BoringAI(gym.Env):
         self.obs_size = 1
         self.max_episode_steps = 100
         self.log_frequency = 5
+        self.golden_durability = 2
         self.start_time = datetime.datetime.now()
         print("Init at ", self.start_time)
 
         # BoringAI parameters
         self.tunnel_len = 9
-        self.block_type = ['stone', 'dirt', 'planks']
-        self.block_dict = {'stone': 0, 'dirt': 1, 'planks': 2, 'air': 3,
-                'bedrock':3}
-        self.tool_dict = {0:"diamond pickaxe", 1:"diamond shovel",2:"diamond axe"}
-
+        self.block_type = ['stone', 'dirt', 'planks','prismarine','clay','log']
+        self.block_dict = {'stone': 0, 'dirt': 1, 'planks': 2,
+                'prismarine' :3, 'clay': 4, 'log':5,
+                'bedrock':6, 'air':6}
+        self.tool_dict = {0:"diamond pickaxe", 1:"diamond shovel",2:"diamond axe",
+                3:"golden pickaxe", 4:"golden shovel", 5:"golden axe"}
+        self.total_tool_type = 3
+        self.total_tool_material = 2
+        self.total_block_type = len(self.block_dict.keys()) - 1 #minus 1 due to air and bedrock counting as other
+        self.golden_durability_dict = defaultdict(lambda:self.golden_durability) # currently only used for golden, takes in index of action
         # Rllib Parameters
         # self.action_space = Box(-1, 1, shape=(3,), dtype=np.float32)
         # self.observation_space = Box(0, 1, shape=(np.prod([2, self.obs_size, self.obs_size]), ), dtype=np.int32)
-        self.action_space = Discrete(3)                 # [pickaxe, shovel, axe]
-        self.observation_space = MultiDiscrete([4,2]);  # ([air, dirt, stone, planks], [no attack, attack])
+        self.action_space = MultiDiscrete([self.total_tool_type,self.total_tool_material]   )
+        # [pickaxe, shovel, axe] [diamond,golden]
+        self.observation_space = MultiDiscrete([self.total_block_type,2]);  # ([air, dirt, stone, planks], [no attack, attack])
 
         # Malmo Parameters
         self.agent_host = MalmoPython.AgentHost()
@@ -88,6 +95,8 @@ class BoringAI(gym.Env):
         self.episode_return = 0
         self.episode_step = 0
         self.initial_reward = INITIAL_REWARD
+        self.golden_durability_dict.clear()
+        self.golden_durablity_dict = defaultdict(lambda:self.golden_durability)
         #self.episode_action_log = defaultdict(lambda:[0,0])#uncomment when you want to have per episode statistics
 
         # Log
@@ -107,7 +116,8 @@ class BoringAI(gym.Env):
         Take an action in the environment and return the results.
 
         Args
-            action: <int> index of the action to take
+            action: <np.array> [[action][material]]
+                [[pickaxe,shovel,axe][diamond,golden]]
 
         Returns
             observation: <np.array> flattened array of obseravtion
@@ -115,18 +125,41 @@ class BoringAI(gym.Env):
             done: <bool> indicates terminal state
             info: <dict> dictionary of extra information
         """
-        #increment total blocks used for the tool
-        self.episode_action_log[action][1] +=1
-        #increment correct usage
-        if (action%3==self.obs):
-            self.episode_action_log[action][0]+=1
+
         reward_delta = 0 # calling getWorldState() below loses our reward delta
+        i_action = action[0]+action[1]*self.total_tool_type
+        #find hotbar index of the action
+        if action[1] == 1:
+            #penalize gold tools and action log counts as incorrect for more than usage
+            if self.golden_durability_dict[i_action]<1:
+                reward_delta += 200
+            else:
+                if (i_action%self.total_tool_type==self.obs):
+                    self.episode_action_log[i_action][0]+=1
+
+            self.golden_durability_dict[i_action]-=1
+        else:
+            #penalize if using normal tools with special blocks and action log counts as incorrect
+            if (self.obs >2 and self.obs<6):
+                reward_delta +=200
+            else:
+                if (i_action%self.total_tool_type==self.obs):
+                    self.episode_action_log[i_action][0]+=1
+
+        #action logging
+        self.episode_action_log[i_action][1] +=1
+
+
+
+
+
 
         # Get Action
         if self.allow_break_action:
         # switch tools, start digging
+
             self.agent_host.sendCommand('move 0');
-            self.agent_host.sendCommand('hotbar.' + str(action + 1) + ' 1')
+            self.agent_host.sendCommand('hotbar.' + str(i_action + 1) + ' 1')
             self.agent_host.sendCommand('attack 1')
             # time.sleep(0.8)  # Allow steve to break the block
 
@@ -176,7 +209,7 @@ class BoringAI(gym.Env):
             #reward is converted to blocks/minute
             reward += (int)(self.tunnel_len/self.initial_reward*20*60)   # add to reward so it can get passed out
 
-            for action in range(3):
+            for action in range(self.total_tool_material*self.total_tool_type):
                 self.action_log[action].append([self.episode_action_log[action][0],self.episode_action_log[action][1]])
                 self.episode_returns=self.initial_reward
             print("END REWARD (blocks/minute)", reward)
@@ -210,7 +243,8 @@ class BoringAI(gym.Env):
         # while lots of dirt = quick results
         # But it wasn't really learning. Just chance
         # Defining equal amounts of each block = more consistency
-        blocks = ['stone', 'stone', 'stone', 'dirt', 'dirt', 'dirt', 'planks', 'planks', 'planks']
+        blocks = ['stone', 'stone', 'prismarine', 'dirt', 'dirt', 'clay',
+                'planks', 'planks', 'log']
         random.shuffle(blocks)
 
         # Blocks to Break
@@ -256,6 +290,9 @@ class BoringAI(gym.Env):
                                 <InventoryItem slot="0" type="diamond_pickaxe"/>
                                 <InventoryItem slot="1" type="diamond_shovel"/>
                                 <InventoryItem slot="2" type="diamond_axe"/>
+                                <InventoryItem slot="3" type="golden_pickaxe"/>
+                                <InventoryItem slot="4" type="golden_shovel"/>
+                                <InventoryItem slot="5" type="golden_axe"/>
                             </Inventory>
                         </AgentStart>
                         <AgentHandlers>
@@ -382,10 +419,12 @@ class BoringAI(gym.Env):
         """
         plt.figure()
         plt.style.use('seaborn-darkgrid')
-        palette = plt.get_cmap('Set1')
-        num=0
-        for i_tool in range(3):
-            num+=1
+        palette = plt.get_cmap('Paired')
+        num=-2
+        for i_tool in range(self.total_tool_type*self.total_tool_material):
+            if (num > 3):
+                num=-1
+            num+=2
             y_values = []
 
             stats=[0,0]
@@ -397,7 +436,7 @@ class BoringAI(gym.Env):
                 else:
                     y_values.append(1)
             plt.plot(list(range(len(self.action_log[i_tool]))),y_values,
-                    marker='', color=palette(num), linewidth=1, alpha=0.9,
+                    marker='', color=palette(num), linewidth=1.2, alpha=0.9,
                     label=self.tool_dict[i_tool])
         plt.legend(loc=2, ncol=2)
         plt.title("Tool Usage Statistics", loc='left', fontsize=12,
