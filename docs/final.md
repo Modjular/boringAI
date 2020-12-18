@@ -54,14 +54,11 @@ We chose DQN for our secondary model since we wanted to compare how well PPO per
 
 ### Quantitative
 
-Returns graph for PPO \
-<img src="assets/returns_PP0_21.png" >  
-Returns graph for DQN \
-<img src="assets/returns_rllib_dqn.png" >  
-Tool Stat graph for PPO \
-<img src="assets/toolstats_PPO_21.png" >  
-Tool Stat graph for DQN \
-<img src="assets/toolstats_rllib_dqn.png" >  
+PPO vs DQN Returns \
+<img src="assets/returns_PP0_21.png" width="45%"> <img src="assets/returns_rllib_dqn.png" width="45%">  
+
+PPO vs DQN Tool Usage \
+<img src="assets/toolstats_PPO_21.png" width="45%"> <img src="assets/toolstats_rllib_dqn.png" width="45%">  
 
 ### Qualitative
 Although our metrics are straightforward, our sanity check is changing tools in response to its environment. Qualitatively, we can check that it’s using the right tool (shovel) to dig through dirt. Because of the nature of our state, there are not many things we can qualitatively measure. But perhaps we will discover qualitative metrics as we progress and attempt to add more difficult states.
