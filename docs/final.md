@@ -60,6 +60,9 @@ PPO vs DQN Returns \
 PPO vs DQN Tool Usage \
 <img src="assets/toolstats_PPO_21.png" width="45%"> <img src="assets/toolstats_rllib_dqn.png" width="45%">  
 
+PPO Durability Returns and Tool Usage \
+<img src="assets/returns_durability.png" width="45%"> <img src="assets/toolstats_durability.png" width="45%">  
+
 ### Qualitative
 Although our metrics are straightforward, our sanity check is changing tools in response to its environment. Qualitatively, we can check that it’s using the right tool (shovel) to dig through dirt. Because of the nature of our state, there are not many things we can qualitatively measure. But perhaps we will discover qualitative metrics as we progress and attempt to add more difficult states.
 
