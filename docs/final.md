@@ -9,6 +9,8 @@ In Minecraft, certain tools mine through blocks faster than others (i.e. pickaxe
 
 ## Approaches
 In this section, we’ll explain our initial prototype. Problems we encountered. Why we switched to RLLib. Why continuous vs discrete?
+<img src="assets/agent.png">
+
 
 ### Phase 1: Dense rewards and Discrete Movements (Prototype) 
 For each mission, our agent is spawned with 9 blocks lined in front of him as seen in the picture above. To complete the mission, he has to reach the finish line by destroying the blocks in front of him, using one of the tools in the hotbar ( shovel or pickaxe).  
@@ -45,7 +47,7 @@ We chose PPO since it was easy to implement and performed fairly well. PPO start
 
 #### Deep Q Network (DQN)
 DQN combines Q-Learning with Deep Neural Networks to optimize a policy that aims to maximize the reward. Below is the pseudocode for the dqn algorithm. 
-<img src="assets/dqn_algorithm.png" >  
+<img src="assets/dqn_algorithm.png" width="80%">  
 image from https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
 
 We chose DQN for our secondary model since we wanted to compare how well PPO performed. Since our DQN came from the same library as PPO, it was easy to implement. 
@@ -68,6 +70,7 @@ Although our metrics are straightforward, our sanity check is changing tools in 
 
 After incorporating time, our metric will be based on the time it takes for the agent to dig a 20 block straight tunnel through a mountain made up of different types of blocks. 
 
+<img src="assets/steve2.png">
 
 ## References
 RLlib - algorithms\
