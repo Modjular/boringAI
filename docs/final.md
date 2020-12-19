@@ -69,34 +69,34 @@ For phase 3, we attempted to incorporate one of our moonshots; durability. To st
 For our testing set up, the agent carries one of each tool, listed below. We also have a tunnel length of 9 with 2 normal blocks and 1 pro block of each type (e.g. 2 blocks each of dirt, stone, planks and 1 block of each of dirtPro, stonePro, and plankPro)
 
 <p align="center">
-<table style="margin:0px auto;border:2px solid #ff0000 border-collapse:collapse;border-spacing:0;" >
+<table style="margin:0px auto;border:2px solid #DCDCDC border-collapse:collapse;border-spacing:0;" >
 <tr>
-<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Action Space</th>
-<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Observation Space</th>
+<th style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Action Space</th>
+<th style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Observation Space</th>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;";>Diamond Pickaxe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Stone</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Diamond Pickaxe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Stone</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Pickaxe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">StonePro</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Golden Pickaxe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">StonePro</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Diamond Shovel</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Dirt</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Diamond Shovel</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Dirt</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Shovel</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">DirtPro</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Golden Shovel</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">DirtPro</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Diamond Axe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Plank</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Diamond Axe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Plank</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Axe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">PlankPro</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Golden Axe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">PlankPro</td>
 </tr>
 </table>
 </p>
@@ -149,28 +149,28 @@ But we have other baselines help to prove that it wasn’t just luck that increa
 <p align="center">
 <table style="margin:0px auto;border-collapse:collapse;border-spacing:5;" >
 <tr>
-<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Baseline</th>
-<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Blocks Per Minute</th>
+<th style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Baseline</th>
+<th style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Blocks Per Minute</th>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Random Agent</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">24.17</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Random Agent</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">24.17</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Pickaxe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">36.8</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Only Pickaxe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">36.8</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Only Shovel</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">19.6</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Only Shovel</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">19.6</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Axe</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">22.8</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">Only Axe</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;">22.8</td>
 </tr>
 <tr>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Perfect Agent</td>
-<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">69.9</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">Perfect Agent</td>
+<td style="padding: 5px; border: 1px solid #DCDCDC; border-collapse: collapse;background-color: #f2f2f2;">69.9</td>
 </tr>
 </table>
 </p>
