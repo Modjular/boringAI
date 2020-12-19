@@ -4,7 +4,8 @@ title:  Final Report
 ---
 
 ## Video
-[![BoringAI Video](http://img.youtube.com/vi/ClSQaUo3G7c/0.jpg)](https://www.youtube.com/watch?v=ClSQaUo3G7c "BoringAI video")
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ClSQaUo3G7c" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 ## Project Summary
