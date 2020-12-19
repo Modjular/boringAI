@@ -124,7 +124,7 @@ Using this, we can change the number of blocks or the initial reward while still
 
 #### Tunnel Length
 **Q**: Did the length of the tunnel have any effect on the speed of training?  
-As shown in the graph below, the 21-block tunnel was terribly difficult for the agent to learn. Although we do see improvement over the long run, this experiment told us that, in order to train quickly, we would have to keep episodes short.
+As shown in the graph below, the 21-block tunnel was more difficult for the agent to learn. Although we do see improvement over the long run, this experiment told us that, in order to train quickly, we would have to keep episodes short, or figure out a curriculum that ramped up to longer tunnels.
 
 <img src="assets/returns_PP0_21.png" width="45%">  
 
