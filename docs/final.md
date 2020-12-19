@@ -68,16 +68,38 @@ For phase 3, we attempted to incorporate one of our moonshots; durability. To st
 
 For our testing set up, the agent carries one of each tool, listed below. We also have a tunnel length of 9 with 2 normal blocks and 1 pro block of each type (e.g. 2 blocks each of dirt, stone, planks and 1 block of each of dirtPro, stonePro, and plankPro)
 
-  
-| Action Space    | Observation Space |
-|-----------------|-------------------|
-| Diamond Pickaxe | Stone             |
-| Golden Pickaxe  | StonePro          |
-| Diamond Shovel  | Dirt              |
-| Golden Shovel   | DirtPro           |
-| Diamond Axe     | Plank             |
-| Golden Axe      | PlankPro          |
-
+<p align="center">
+<table style="margin:0px auto;border:2px solid #ff0000 border-collapse:collapse;border-spacing:0;" >
+<tr>
+<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Action Space</th>
+<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Observation Space</th>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;";>Diamond Pickaxe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Stone</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Pickaxe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">StonePro</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Diamond Shovel</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Dirt</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Shovel</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">DirtPro</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Diamond Axe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Plank</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Axe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">PlankPro</td>
+</tr>
+</table>
+</p>
 
 In short, on top of our original reward system (blocks/min) that was calculated based on the tunnel length and total number of ticks, we added “durability”. The golden tools had a penalty of an additional 200 ticks if it was used more than twice and the diamond tools had a penalty of an additional 200 ticks when used for pro blocks. 
 
@@ -124,13 +146,34 @@ We know it wasn’t just chance because our baseline determined that a random ag
 But we have other baselines help to prove that it wasn’t just luck that increased the agent’s performance. While there were definitely times where we observed a rare “lucky tunnel” made up almost completely of dirt (the easiest block to dig), we can confidently say that our model did not simply get caught only using “the best tool”. (Note: we eventually implemented tunnels with consistently equal, but shuffled, block composition to further reduce the role of chance)
 
   
-| Baseline      | Blocks Per Minute |
-|---------------|-------------------|
-| Random Agent  | 24.17             |
-| Only Pickaxe  | 36.8              |
-| Only Shovel   | 19.6              |
-| Only Axe      | 22.8              |
-| Perfect Agent | 69.9              |
+<p align="center">
+<table style="margin:0px auto;border-collapse:collapse;border-spacing:5;" >
+<tr>
+<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Baseline</th>
+<th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Blocks Per Minute</th>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Random Agent</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">24.17</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Pickaxe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">36.8</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Only Shovel</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">19.6</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Axe</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">22.8</td>
+</tr>
+<tr>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">Perfect Agent</td>
+<td style="padding: 5px; border: 1px solid black; border-collapse: collapse;background-color: #f2f2f2;">69.9</td>
+</tr>
+</table>
+</p>
 
 
 
