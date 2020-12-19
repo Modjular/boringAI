@@ -50,7 +50,7 @@ PPO uses gradient descent to optimize a policy that aims to maximize the reward.
 <p align="center">
 <img src="assets/ppo_algorithm.png" >  
 </p>
-image from https://spinningup.openai.com/en/latest/algorithms/ppo.html 
+<div style="text-align: right;"><a href = "https://spinningup.openai.com/en/latest/algorithms/ppo.html">image source</a></div>
 
 We chose PPO since it was easy to implement and performed fairly well. PPO starts off by randomly choosing actions in the action space. As it trains longer, it exploits rewards that it has already discovered. An example of this in our AI is when the agent learns that using a pickaxe to mine a stone block takes less time than using either an axe or shovel. This experience motivates the AI to choose this tool in its future encounters with a stone block, so that its reward is maximized.
 
@@ -59,7 +59,7 @@ DQN combines Q-Learning with Deep Neural Networks to optimize a policy that aims
 <p align="center">
 <img src="assets/dqn_algorithm.png" width="75%">  
 </p>
-<a href = "https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf">image source</a>
+<div style="text-align: right;"><a href = "https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf">image source</a></div>
 
 We chose DQN for our secondary model in order to compare PPO’s performance to a more familiar algorithm. DQN was available in the same library and also a plausible good algorithm to use. One advantage of using DQN is that it is more stable when training. One disadvantage is that the DQN uses more memory than PPO as it requires more space to maintain values in its q-table.  
 
@@ -67,38 +67,18 @@ We chose DQN for our secondary model in order to compare PPO’s performance to 
 For phase 3, we attempted to incorporate one of our moonshots; durability. To start off, we added a new material type (gold) for each tool that is faster than its diamond counterpart. To prevent the agent from using only the gold tools, we had it’s durability set to 2 blocks. In order to simulate this, we incurred a penalty when the particular golden tool was used more than twice. It’s maxed usage would be 6 times (twice per golden tool). To further challenge the agent, we implemented a corresponding special block(“pro block”) that is heavily penalized when trying to break with a diamond tool. The hope was to prompt the agent to “save” the golden tools for these special blocks. 
 
 For our testing set up, the agent carries one of each tool, listed below. We also have a tunnel length of 9 with 2 normal blocks and 1 pro block of each type (e.g. 2 blocks each of dirt, stone, planks and 1 block of each of dirtPro, stonePro, and plankPro)
-<p align="center">
-<table style="margin:0px auto;border:2px solid #ff0000 border-collapse:collapse;border-spacing:0; td" >
-  <tr>
-    <th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Action Space</th>
-    <th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Observation Space</th>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;";>Diamond Pickaxe</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Stone</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Pickaxe</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">StonePro</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Diamond Shovel</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Dirt</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Shovel</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">DirtPro</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Diamond Axe</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Plank</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Golden Axe</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">PlankPro</td>
-  </tr>
-</table>
-</p>
+<div align="center">
+  
+| Action Space    | Observation Space |
+|-----------------|-------------------|
+| Diamond Pickaxe | Stone             |
+| Golden Pickaxe  | StonePro          |
+| Diamond Shovel  | Dirt              |
+| Golden Shovel   | DirtPro           |
+| Diamond Axe     | Plank             |
+| Golden Axe      | PlankPro          |
+
+</div>
 In short, on top of our original reward system (blocks/min) that was calculated based on the tunnel length and total number of ticks, we added “durability”. The golden tools had a penalty of an additional 200 ticks if it was used more than twice and the diamond tools had a penalty of an additional 200 ticks when used for pro blocks. 
 
 ## Evaluation
@@ -125,7 +105,7 @@ Using this, we can change the number of blocks or the initial reward while still
 <img src="assets/returns_durability.png" width="45%"> <img src="assets/toolstats_durability.png" width="45%">  
 
 #### Tunnel Length
-**Q: Did the length of the tunnel have any effect on the speed of training?**
+**Q**: Did the length of the tunnel have any effect on the speed of training?  
 As shown in the graph below, the 21-block tunnel was terribly difficult for the agent to learn. Although we do see improvement over the long run, this experiment told us that, in order to train quickly, we would have to keep episodes short.
 
 #### PPO vs DQN: Which One Did Better?
@@ -135,56 +115,39 @@ PPO seemed to perform better thanDQN based on the graph of its rewards and tools
 From the results of PPO and DQN in the previous section, we decided to use PPO for training the AI to learn to use less durable tools (gold tools) before using the more durable tools (diamond tools). Adding durability vastly increased the complexity of the problem and slowed down the learning rate of our PPO agent. At episode 0, the average return of the agent was 12, and at episode 1200, the average return of the agent was 15. At episode 0, the AI picked tools randomly, but at around episode 200, the AI started to start using all tools (except diamond pickaxe) at around 20% used correctly. At episode 1200, The agent used the diamond tools slightly more correctly than the gold tools. We believe that this is due to the nature of the diamond tools being heavily penalized when used against pro blocks. All diamond tools had a percentage used correctly higher than 20%, whereas the gold tools had a percentage used correctly less or equal to 20%. 
 
 #### Baselines (for Phase 2)
-**Q: So how did the agent actually do, according to the baselines?**
+**Q**: So how did the agent actually do, according to the baselines?  
 A “perfect” run, with equal parts dirt, stone, and wood blocks, takes a speed of roughly 70 BPM. Our agents consistently reached upwards of 50 BPM.
 
-**Q: How do you know it didn’t just get lucky?**
+**Q**: How do you know it didn’t just get lucky?  
 We know it wasn’t just chance because our baseline determined that a random agent operates at around 24 BPM,. Our final results were much higher. However, it is interesting to note that, for roughly the first couple hundred episodes, the agent was by this measure a random agent. Thus, its gradual improvement proves it wasn’t just lucky.
 
 But we have other baselines help to prove that it wasn’t just luck that increased the agent’s performance. While there were definitely times where we observed a rare “lucky tunnel” made up almost completely of dirt (the easiest block to dig), we can confidently say that our model did not simply get caught only using “the best tool”. (Note: we eventually implemented tunnels with consistently equal, but shuffled, block composition to further reduce the role of chance)
-<p align="center">
-<table style="margin:0px auto;border-collapse:collapse;border-spacing:5;" >
-  <tr>
-    <th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Baseline</th>
-    <th style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Blocks Per Minute</th>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Random Agent</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">24.17</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Pickaxe  </td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">36.8</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Shovel</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">19.6</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Only Axe</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">22.8</td>
-  </tr>
-  <tr>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">Perfect Agent</td>
-    <td style="padding: 5px; border: 1px solid black; border-collapse: collapse;">69.9</td>
-  </tr>
-</table>
-</p>
+<div align="center">
+  
+| Baseline      | Blocks Per Minute |
+|---------------|-------------------|
+| Random Agent  | 24.17             |
+| Only Pickaxe  | 36.8              |
+| Only Shovel   | 19.6              |
+| Only Axe      | 22.8              |
+| Perfect Agent | 69.9              |
+
+</div>
 
 #### Tool Stats (for Phase 2)
-Q: The rates are going up, is that good?
+**Q**: The rates are going up, is that good?  
 Not necessarily. The Toolstats divide the number of correct uses, divided by the overall number of uses. So a pick might be used 5 times, but only be used correctly 2 times, resulting in a correct-usage-rate of 40%. So here’s the catch: If the pickaxe was used exclusively, it would have a correct-usage-rate of only 33%. However, it would have been used to get through some of the slowest blocks, overall resulting in a faster agent. All that being said, higher rates are generally better.
 
-**Q: So what good is it then?**
+**Q**: So what good is it then?  
 The main thing we used this graph for was to determine if it was approaching that perfect-usage. Logically, if the agent was perfect, the correct-usage-rate would be 100% for each tool. However, do rates below 100% mean the agent is failing? One thing this graph also told is that the agent begins to use the pickaxe and axe more over time, which we didn’t expect. 
 
-**Q: So, did the agent improve? Conclusions**
+**Q**: So, did the agent improve? Conclusions  
 Yes, but not as intended. From watching the agent during training, and inferring from the tools usage, we can confidently say that the agent got faster. However, it didn’t learn to get faster by using the correct tools every time. Instead, it learned to use the correct tool for the slowest blocks, while remaining okay with incurring the small penalty for digging quick blocks with the wrong tools (i.e. digging dirt with an axe). 
 
 Overall, our agent improved quantitatively. But qualitatively is a separate question.
 
 ### Qualitative
-**Q: Statistics aside, did it look like it was doing what you wanted?**
+**Q**: Statistics aside, did it look like it was doing what you wanted?  
 It definitely didn’t learn how we intended. We thought it was going to learn which tool goes to what, like a human would. But instead, it seemed more like it was learning which tools to not use. 
 
 In support of this, we also observed that the agent always seemed to do well near the beginning and end of the episode. While struggling the most near the middle of the tunnel. This was more apparent in the longer tunnel. Because of the nature of our state, there are not many things we can qualitatively measure. 
