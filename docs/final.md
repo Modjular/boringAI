@@ -2,6 +2,7 @@
 layout: default
 title:  Final Report
 ---
+
 ## Video
 
 ## Project Summary
@@ -12,8 +13,9 @@ For our prototype, we concentrated on just switching to the right tool. To do so
 Our evaluation will focus on phase 2 which has the most data and observations. Our phase 2 goes into more detail since our moonshot case, phase 3, doesn’t have enough data (couldn’t be run long enough in the time period) to come to  any significant conclusions.
 
 ## Approaches
+
 <p align="center">
-<img src="assets/agent.png" width=70%>
+<img src="assets/agent.png" width="70%">
 </p>
 
 ### Phase 1: Dense rewards and Discrete Movements (Prototype) 
@@ -66,33 +68,33 @@ For phase 3, we attempted to incorporate one of our moonshots; durability. To st
 
 For our testing set up, the agent carries one of each tool, listed below. We also have a tunnel length of 9 with 2 normal blocks and 1 pro block of each type (e.g. 2 blocks each of dirt, stone, planks and 1 block of each of dirtPro, stonePro, and plankPro)
 <p align="center">
-<table style="margin:0px auto;border-collapse:collapse;border-spacing:0;" >
+<table style="margin:0px auto;border:2px solid #ff0000 border-collapse:collapse;border-spacing:0;" >
   <tr>
     <th>Action Space</th>
-    <th>Observation Space</th>
+    <th>Observation Space     </th>
   </tr>
   <tr>
-    <td>Diamond Pickaxe</td>
+    <td>Diamond Pickaxe     </td>
     <td>Stone</td>
   </tr>
   <tr>
-    <td>Golden Pickaxe</td>
+    <td>Golden Pickaxe     </td>
     <td>StonePro</td>
   </tr>
   <tr>
-    <td>Diamond Shovel</td>
+    <td>Diamond Shovel     </td>
     <td>Dirt</td>
   </tr>
   <tr>
-    <td>Golden Shovel</td>
+    <td>Golden Shovel     </td>
     <td>DirtPro</td>
   </tr>
   <tr>
-    <td>Diamond Axe</td>
+    <td>Diamond Axe     </td>
     <td>Plank</td>
   </tr>
   <tr>
-    <td>Golden Axe</td>
+    <td>Golden Axe     </td>
     <td>PlankPro</td>
   </tr>
 </table>
@@ -141,29 +143,29 @@ We know it wasn’t just chance because our baseline determined that a random ag
 
 But we have other baselines help to prove that it wasn’t just luck that increased the agent’s performance. While there were definitely times where we observed a rare “lucky tunnel” made up almost completely of dirt (the easiest block to dig), we can confidently say that our model did not simply get caught only using “the best tool”. (Note: we eventually implemented tunnels with consistently equal, but shuffled, block composition to further reduce the role of chance)
 <p align="center">
-<table style="margin:0px auto;border-collapse:collapse;border-spacing:0;" >
+<table style="margin:0px auto;border-collapse:collapse;border-spacing:5;" >
   <tr>
-    <th>Baseline</th>
-    <th>Blocks Per Minute</th>
+    <th>Baseline       </th>
+    <th>Blocks Per Minute   </th>
   </tr>
   <tr>
-    <td>Random Agent</td>
+    <td>Random Agent  </td>
     <td>24.17</td>
   </tr>
   <tr>
-    <td>Only Pickaxe</td>
+    <td>Only Pickaxe  </td>
     <td>36.8</td>
   </tr>
   <tr>
-    <td>Only Shovel</td>
+    <td>Only Shovel  </td>
     <td>19.6</td>
   </tr>
   <tr>
-    <td>Only Axe</td>
+    <td>Only Axe  </td>
     <td>22.8</td>
   </tr>
   <tr>
-    <td>Perfect Agent</td>
+    <td>Perfect Agent  </td>
     <td>69.9</td>
   </tr>
 </table>
