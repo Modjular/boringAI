@@ -4,6 +4,8 @@ title:  Final Report
 ---
 
 ## Video
+[![BoringAI Video](http://img.youtube.com/vi/ClSQaUo3G7c/0.jpg)](https://www.youtube.com/watch?v=ClSQaUo3G7c "BoringAI video")
+
 
 ## Project Summary
 In Minecraft, certain tools mine through blocks faster than others (i.e. pickaxes destroy stone-blocks faster than shovels). We aim to train a Minecraft agent using deep reinforcement learning to dig to the end of a tunnel as fast as possible, by learning what tools are best for each material it encounters. Ideally, our AI will learn to use the proper tool to destroy the block, for maximum tunneling speed.
@@ -118,20 +120,23 @@ Here’s the formula we use to convert “raw” rewards to Blocks Per Minute:
 Using this, we can change the number of blocks or the initial reward while still being able to compare performance between runs. The graphs below use this metric.
 
 **PPO vs DQN Returns** \
-<img src="assets/returns_PP0_21.png" width="45%"> <img src="assets/returns_rllib_dqn.png" width="45%">  
-
-**PPO Durability Returns and Tool Usage** \
-<img src="assets/returns_durability.png" width="45%"> <img src="assets/toolstats_durability.png" width="45%">  
+<img src="assets/Returns_PPO_9block.png" width="45%"> <img src="assets/returns_rllib_dqn.png" width="45%">  
 
 #### Tunnel Length
 **Q**: Did the length of the tunnel have any effect on the speed of training?  
 As shown in the graph below, the 21-block tunnel was terribly difficult for the agent to learn. Although we do see improvement over the long run, this experiment told us that, in order to train quickly, we would have to keep episodes short.
+
+<img src="assets/returns_PP0_21.png" width="45%">  
 
 #### PPO vs DQN: Which One Did Better?
 PPO seemed to perform better thanDQN based on the graph of its rewards and toolstats. The average return for both models at episode 0 was around 24. However, after 700 episodes, the average return for PPO was near 40, whereas the average return for DQN was near 32. This shows that the PPO agent learned at a faster rate than the DQN agent. Furthermore, data from the tool usage graph of PPO and DQN showed that after 700 episodes, the percentage correctly used for the diamond pickaxe was 39% and diamond axe was 36% for PPO. These were higher percentages than that of the DQN agent, which both used the diamond pickaxe and axe around correctly 31% of the time. Both agents had similar performance on using the diamond shovel at around 34% correct-usage-rate. 
 
 #### Results of adding Durability 
 From the results of PPO and DQN in the previous section, we decided to use PPO for training the AI to learn to use less durable tools (gold tools) before using the more durable tools (diamond tools). Adding durability vastly increased the complexity of the problem and slowed down the learning rate of our PPO agent. At episode 0, the average return of the agent was 12, and at episode 1200, the average return of the agent was 15. At episode 0, the AI picked tools randomly, but at around episode 200, the AI started to start using all tools (except diamond pickaxe) at around 20% used correctly. At episode 1200, The agent used the diamond tools slightly more correctly than the gold tools. We believe that this is due to the nature of the diamond tools being heavily penalized when used against pro blocks. All diamond tools had a percentage used correctly higher than 20%, whereas the gold tools had a percentage used correctly less or equal to 20%. 
+
+**PPO Durability Returns and Tool Usage** \
+<img src="assets/returns_durability.png" width="45%"> <img src="assets/toolstats_durability.png" width="45%">  
+
 
 #### Baselines (for Phase 2)
 **Q**: So how did the agent actually do, according to the baselines?  
