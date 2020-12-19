@@ -67,7 +67,7 @@ We chose DQN for our secondary model in order to compare PPO’s performance to 
 For phase 3, we attempted to incorporate one of our moonshots; durability. To start off, we added a new material type (gold) for each tool that is faster than its diamond counterpart. To prevent the agent from using only the gold tools, we had it’s durability set to 2 blocks. In order to simulate this, we incurred a penalty when the particular golden tool was used more than twice. It’s maxed usage would be 6 times (twice per golden tool). To further challenge the agent, we implemented a corresponding special block(“pro block”) that is heavily penalized when trying to break with a diamond tool. The hope was to prompt the agent to “save” the golden tools for these special blocks. 
 
 For our testing set up, the agent carries one of each tool, listed below. We also have a tunnel length of 9 with 2 normal blocks and 1 pro block of each type (e.g. 2 blocks each of dirt, stone, planks and 1 block of each of dirtPro, stonePro, and plankPro)
-<div align="center">
+
   
 | Action Space    | Observation Space |
 |-----------------|-------------------|
@@ -78,7 +78,7 @@ For our testing set up, the agent carries one of each tool, listed below. We als
 | Diamond Axe     | Plank             |
 | Golden Axe      | PlankPro          |
 
-</div>
+
 In short, on top of our original reward system (blocks/min) that was calculated based on the tunnel length and total number of ticks, we added “durability”. The golden tools had a penalty of an additional 200 ticks if it was used more than twice and the diamond tools had a penalty of an additional 200 ticks when used for pro blocks. 
 
 ## Evaluation
@@ -122,7 +122,7 @@ A “perfect” run, with equal parts dirt, stone, and wood blocks, takes a spee
 We know it wasn’t just chance because our baseline determined that a random agent operates at around 24 BPM,. Our final results were much higher. However, it is interesting to note that, for roughly the first couple hundred episodes, the agent was by this measure a random agent. Thus, its gradual improvement proves it wasn’t just lucky.
 
 But we have other baselines help to prove that it wasn’t just luck that increased the agent’s performance. While there were definitely times where we observed a rare “lucky tunnel” made up almost completely of dirt (the easiest block to dig), we can confidently say that our model did not simply get caught only using “the best tool”. (Note: we eventually implemented tunnels with consistently equal, but shuffled, block composition to further reduce the role of chance)
-<div align="center">
+
   
 | Baseline      | Blocks Per Minute |
 |---------------|-------------------|
@@ -132,7 +132,7 @@ But we have other baselines help to prove that it wasn’t just luck that increa
 | Only Axe      | 22.8              |
 | Perfect Agent | 69.9              |
 
-</div>
+
 
 #### Tool Stats (for Phase 2)
 **Q**: The rates are going up, is that good?  
