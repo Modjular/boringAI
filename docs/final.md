@@ -206,13 +206,11 @@ In support of this, we also observed that the agent always seemed to do well nea
 <p align="center">
 <img src="assets/steve2.png">
 </p>
-In short, no. Why? Because it’s much harder to train a model with sparse rewards in a continuous environment than with dense rewards in a discrete environment. 
+In short, it didn't learn what we wanted, or the way we wanted. Why? Because it’s much harder to train a model with sparse rewards in a continuous environment than with dense rewards in a discrete environment. 
 
-However, our evidence all points towards improvement. In multiple runs, it’s pace of improvement was linear, and, given more time and better reward strategies, we firmly believe it could have eventually obtained perfect tool-usage.
+Quantitatively, our agent was, without a doubt, learning to use tools more effectively. But qualitatively, it displayed unintended behavior that we didn’t expect, or want. Yes, improvement is improvement. But our goal was to teach the model to learn the correct tools, and then as a result be fast. Instead, it seemed more focused on avoiding slow strategies, not tool mastery.
 
-Quantitatively, our agent was, without a doubt, learning to use tools more effectively. But qualitatively, it displayed unintended behavior that we didn’t expect. Yes, improvement is improvement. But our goal was to teach the model to be first and foremost correct, and then as a result, fast. 
-
-Thus, we deem our project a mild success. It didn’t meet our expectations qualitatively, but it for sure learned how to go fast - just not in the way we had hoped. 
+Thus, we deem our project a mild success. It didn’t meet our expectations qualitatively, but it learned how to go fast - just not in the way we had hoped. 
 
 ## References
 RLlib - algorithms\
