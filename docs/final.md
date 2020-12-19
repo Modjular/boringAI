@@ -120,9 +120,6 @@ Using this, we can change the number of blocks or the initial reward while still
 **PPO vs DQN Returns** \
 <img src="assets/returns_PP0_21.png" width="45%"> <img src="assets/returns_rllib_dqn.png" width="45%">  
 
-**PPO vs DQN Tool Usage** \
-<img src="assets/toolstats_PPO_21.png" width="45%"> <img src="assets/toolstats_rllib_dqn.png" width="45%">  
-
 **PPO Durability Returns and Tool Usage** \
 <img src="assets/returns_durability.png" width="45%"> <img src="assets/toolstats_durability.png" width="45%">  
 
@@ -178,13 +175,18 @@ But we have other baselines help to prove that it wasn’t just luck that increa
 
 
 #### Tool Stats (for Phase 2)
+
+
+**PPO vs DQN Tool Usage** \
+<img src="assets/toolstats_PPO_21.png" width="45%"> <img src="assets/toolstats_rllib_dqn.png" width="45%">  
+
 **Q**: The rates are going up, is that good?  
 Not necessarily. The Toolstats divide the number of correct uses, divided by the overall number of uses. So a pick might be used 5 times, but only be used correctly 2 times, resulting in a correct-usage-rate of 40%. So here’s the catch: If the pickaxe was used exclusively, it would have a correct-usage-rate of only 33%. However, it would have been used to get through some of the slowest blocks, overall resulting in a faster agent. All that being said, higher rates are generally better.
 
 **Q**: So what good is it then?  
-The main thing we used this graph for was to determine if it was approaching that perfect-usage. Logically, if the agent was perfect, the correct-usage-rate would be 100% for each tool. However, do rates below 100% mean the agent is failing? One thing this graph also told is that the agent begins to use the pickaxe and axe more over time, which we didn’t expect. 
+The main thing we used this graph for was to determine if it was approaching that perfect-usage. Logically, if the agent was perfect, the correct-usage-rate would be 100% for each tool. However, do rates below 100% mean the agent is failing? One thing this graph also told is that the agent begins to use the pickaxe and axe more over time, which we didn’t expect. We can also compare it to the DQN, whose correct-usage-rates stayed relative equal, indicating it wasn't making the same decisions as the PPO agent.
 
-**Q**: So, did the agent improve? Conclusions  
+**Q**: So, did the agent improve? How do they compare?  
 Yes, but not as intended. From watching the agent during training, and inferring from the tools usage, we can confidently say that the agent got faster. However, it didn’t learn to get faster by using the correct tools every time. Instead, it learned to use the correct tool for the slowest blocks, while remaining okay with incurring the small penalty for digging quick blocks with the wrong tools (i.e. digging dirt with an axe). 
 
 Overall, our agent improved quantitatively. But qualitatively is a separate question.
